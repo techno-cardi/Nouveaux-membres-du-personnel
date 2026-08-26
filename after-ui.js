@@ -4,6 +4,7 @@
   if (!input || !suggestions) return;
 
   const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
+  const RESERVATION_GUIDE = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
 
   document.title = 'Guide pour les nouveaux membres du personnel | Cardinal-Roy';
 
@@ -21,7 +22,6 @@
     nodes.forEach(node => {
       node.nodeValue = (node.nodeValue || '')
         .replace(/Mosaïk/g, 'Mozaïk')
-        .replace(/Mosaik/g, 'Mozaïk')
         .replace(/Mosaik/g, 'Mozaïk');
     });
   };
@@ -85,6 +85,102 @@
 
   const directoryHelp = document.querySelector('.directory-intro p');
   if (directoryHelp) directoryHelp.textContent = 'Ouvrez une section ou utilisez la recherche pour aller directement à ce qu’il vous faut.';
+
+  // Les noms d'applications deviennent des liens lorsqu'ils sont mentionnés dans une explication.
+  const appLinks = new Map([
+    ['mes suivis','https://appsp.ca/messuivis/'],
+    ['reservation','https://appsp.ca/reservation/'],
+    ['plan de classe','https://appsp.ca/plandeclasse/'],
+    ['mes courriels','https://appsp.ca/mescourriels/'],
+    ['mon horaire','https://appsp.ca/monhoraire/'],
+    ['mozaik','https://mozaikportail.ca/'],
+    ['mozaik portail','https://mozaikportail.ca/'],
+    ['drive commun','https://drive.google.com/drive/folders/0ACOxqc1_36isUk9PVA'],
+    ['page de lancement cardinal-roy','https://appsp.ca/lancement/cardinal-roy/']
+  ]);
+
+  document.querySelectorAll('.procedure-content strong').forEach(strong => {
+    if (strong.closest('a,button,h1,h2,h3,h4')) return;
+    const key = normalize(strong.textContent)
+      .replace(/^connexion\s+(a|à)?\s*/,'')
+      .replace(/[^a-z0-9 -]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    const href = appLinks.get(key);
+    if (!href) return;
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'inline-app-link';
+    strong.replaceWith(link);
+    link.appendChild(strong);
+  });
+
+  // Avis dans Mozaïk Portail : nom, bouton et formulation parent.
+  const avis = document.getElementById('avis');
+  if (avis) {
+    const title = avis.querySelector('.procedure-title');
+    if (title) title.textContent = 'Avis dans Mozaïk Portail (SOI)';
+
+    const body = avis.querySelector('.procedure-content');
+    if (body) {
+      let login = [...body.querySelectorAll('a')].find(a => /mozaik|portail|connexion/i.test(`${a.textContent} ${a.href}`));
+      if (login) {
+        login.href = 'https://mozaikportail.ca/';
+        login.target = '_blank';
+        login.rel = 'noopener noreferrer';
+        login.textContent = 'Connexion Mozaïk';
+        login.classList.add('btn','primary');
+      }
+
+      body.querySelectorAll('p,li,.callout').forEach(el => {
+        const text = normalize(el.textContent);
+        if (text.includes('selon l intention et les regles de l ecole')) {
+          el.innerHTML = el.innerHTML.replace(/ou partagée dans ce système\.?/i, 'ou partagée aux parents.');
+        }
+      });
+    }
+  }
+
+  // Tour de table : délai fixe de 7 jours.
+  const tourtable = document.getElementById('tourtable');
+  if (tourtable) {
+    const body = tourtable.querySelector('.procedure-content');
+    if (body) {
+      body.innerHTML = body.innerHTML
+        .replace(/un\s+délai\s+généralement\s+de\s+7\s+jours/gi, 'un délai de 7 jours')
+        .replace(/généralement\s+de\s+7\s+jours/gi, 'de 7 jours')
+        .replace(/généralement\s+7\s+jours/gi, '7 jours');
+    }
+  }
+
+  // Réservation / convocation : un seul guide, avec le bon lien.
+  [...document.querySelectorAll('.procedure')].forEach(procedure => {
+    const title = normalize(procedure.querySelector('.procedure-title')?.textContent || '');
+    if (!/reservation|convocation|convoquer|recuperation|reprise d examen/.test(title)) return;
+    const body = procedure.querySelector('.procedure-content');
+    if (!body) return;
+
+    let guide = [...body.querySelectorAll('a')].find(a => /guide.*systeme de reservation|systeme de reservation.*guide/.test(normalize(a.textContent)));
+    const tutorialLinks = [...body.querySelectorAll('a')].filter(a => /tutoriel.*reservation|voir le tutoriel de reservation/.test(normalize(a.textContent)));
+
+    if (!guide && tutorialLinks.length) {
+      guide = tutorialLinks.shift();
+      guide.textContent = 'Guide - Système de réservation';
+    }
+    if (guide) {
+      guide.href = RESERVATION_GUIDE;
+      guide.target = '_blank';
+      guide.rel = 'noopener noreferrer';
+    }
+
+    tutorialLinks.forEach(a => {
+      const box = a.closest('.callout,.tutorial-box,.tutoriel-box');
+      if (box && normalize(box.textContent) === normalize(a.textContent)) box.remove();
+      else a.remove();
+    });
+  });
 
   // Les catégories doivent toujours mener à une vraie section de la page.
   const nav = document.querySelector('.section-nav-inner');
