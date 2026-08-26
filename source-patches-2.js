@@ -4,6 +4,7 @@
 
   const RESERVATION_URL = 'https://appsp.ca/reservation/';
   const RESERVATION_TUTORIAL_URL = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
+  const ENCADREMENT_URL = 'https://drive.google.com/file/d/1x3FtPGjXHO98NtOc2zvgWUVCVqPhZFcP/view';
   const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
 
   const normalize = value => (value || '')
@@ -26,26 +27,10 @@
     return links;
   };
 
-  const setPrimary = (node, href, label, match=/connexion|appsp|mozaik|portail|reservation|mes suivis|mes courriels|plan de classe/i) => {
-    if (!node) return;
+  const setLink = (node, href, label, {primary=false, match=null}={}) => {
+    if (!node) return null;
     const body = bodyOf(node);
-    const links = [...body.querySelectorAll('a')];
-    let target = links.find(a => match.test(`${a.textContent} ${a.href}`));
-    if (!target) {
-      target = document.createElement('a');
-      ensureLinks(node)?.prepend(target);
-    }
-    target.href = href;
-    target.target = '_blank';
-    target.rel = 'noopener noreferrer';
-    target.classList.add('btn','primary');
-    target.textContent = label;
-  };
-
-  const setTutorial = (node, href, label) => {
-    if (!node) return;
-    const body = bodyOf(node);
-    let link = [...body.querySelectorAll('a')].find(a => /tutoriel|guide de reservation|guide réservation|reservation.*guide/i.test(`${a.textContent} ${a.href}`));
+    let link = match ? [...body.querySelectorAll('a')].find(a => match.test(`${a.textContent} ${a.href}`)) : null;
     if (!link) {
       link = document.createElement('a');
       ensureLinks(node)?.append(link);
@@ -54,18 +39,48 @@
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.classList.add('btn');
-    link.classList.remove('primary');
+    link.classList.toggle('primary', primary);
     link.textContent = label;
+    return link;
   };
 
-  // Liens des applications principales.
+  const setPrimary = (node, href, label, match=/connexion|appsp|mozaik|portail|reservation|mes suivis|mes courriels|plan de classe/i) =>
+    setLink(node, href, label, {primary:true, match});
+
+  const setTutorial = (node, href, label) =>
+    setLink(node, href, label, {match:/tutoriel|guide de reservation|guide réservation|reservation.*guide/i});
+
   ['sortie','tourtable','pi','notes'].forEach(id => setPrimary(getNode(id),'https://appsp.ca/messuivis/','Connexion Mes suivis'));
   setPrimary(getNode('presences'),'https://mozaikportail.ca/','Connexion à Mozaïk Portail',/mozaik|portail|connexion/i);
   ['reservation','chromebook'].forEach(id => setPrimary(getNode(id),RESERVATION_URL,'Connexion à Réservation'));
   setPrimary(getNode('planclasse'),'https://appsp.ca/plandeclasse/','Connexion à Plan de classe');
   setPrimary(getNode('courriels'),'https://appsp.ca/mescourriels/','Connexion à Mes courriels');
 
-  // Le même système sert aux réservations de ressources et aux convocations d'élèves.
+  // Présences dans Mozaïk : étapes conformes à l'aide officielle de Mozaïk-Portail.
+  const presences = getNode('presences');
+  if (presences) {
+    const body = bodyOf(presences);
+    body.querySelectorAll('p,li,.callout').forEach(el => {
+      if (normalize(el.textContent).includes('selon la procedure de l ecole')) el.remove();
+    });
+    body.querySelectorAll('.presence-howto').forEach(el => el.remove());
+    body.querySelector('.steps')?.remove();
+
+    const guide = document.createElement('div');
+    guide.className = 'presence-howto';
+    guide.innerHTML = `
+      <p><strong>Pour prendre les présences :</strong></p>
+      <ol class="steps">
+        <li>Sur la page d’accueil de Mozaïk-Portail, repérez <strong>l’horaire de la journée</strong> et cliquez sur la période ou le groupe concerné.</li>
+        <li>Cliquez sur <strong>Prendre les présences</strong>.</li>
+        <li>Les élèves sont indiqués présents par défaut. Sélectionnez seulement les élèves <strong>absents</strong> ou <strong>en retard</strong>. Vous pouvez utiliser le mode liste ou le plan de classe lorsqu’il est disponible.</li>
+        <li>Quand tout est vérifié, cliquez sur <strong>Enregistrer</strong> en haut à droite.</li>
+      </ol>
+      <div class="callout"><strong>Bon à savoir :</strong> vous ne pouvez pas prendre les présences pour une période future. Une présence peut être modifiée tant que le retard ou l’absence n’a pas été validé par le secrétariat.</div>`;
+    const links = body.querySelector('.links');
+    if (links) body.insertBefore(guide, links); else body.appendChild(guide);
+  }
+
   const reservationNodes = new Set();
   ['reservation','chromebook'].forEach(id => {
     const node = getNode(id);
@@ -80,8 +95,6 @@
   });
   reservationNodes.forEach(node => {
     setTutorial(node,RESERVATION_TUTORIAL_URL,'Voir le tutoriel de Réservation');
-
-    // Le tutoriel actuel indique une fenêtre de réservation de 2 semaines.
     bodyOf(node)?.querySelectorAll('p,li,.callout').forEach(el => {
       const text = normalize(el.textContent);
       if (/4 semaines|4e semaine|quatre semaines/.test(text)) {
@@ -93,14 +106,19 @@
   const reservation = getNode('reservation');
   if (reservation) {
     const first = bodyOf(reservation)?.querySelector('p');
-    if (first) {
-      first.innerHTML = '<strong>Réservation</strong> sert à réserver les ressources de l’école — par exemple les chariots de Chromebooks et certains locaux — et peut aussi servir à convoquer des élèves à une récupération, une reprise de temps ou une autre rencontre prévue.';
-    }
+    if (first) first.innerHTML = '<strong>Réservation</strong> sert à réserver les ressources de l’école — par exemple les chariots de Chromebooks et certains locaux — et peut aussi servir à convoquer des élèves à une récupération, une reprise de temps ou une autre rencontre prévue.';
   }
 
-  // Drive commun.
+  // Le Drive commun ne doit contenir que les liens qui concernent réellement le Drive.
   const drive = getNode('drive') || [...root.querySelectorAll('.searchable')].find(node => /drive commun/.test(titleOf(node)));
   if (drive) {
+    const body = bodyOf(drive);
+    body.querySelectorAll('a').forEach(a => {
+      const text = normalize(a.textContent);
+      const href = a.getAttribute('href') || '';
+      if (text.includes('systeme d encadrement') || href.includes('1x3FtPGjXHO98NtOc2zvgWUVCVqPhZFcP')) a.remove();
+    });
+
     let img = drive.querySelector('.card-head img,.app-logo');
     if (!img) {
       const head = drive.querySelector('.card-head');
@@ -116,6 +134,13 @@
     }
     setPrimary(drive,'https://drive.google.com/drive/folders/0ACOxqc1_36isUk9PVA','Ouvrir le Drive commun',/drive|dossier|ouvrir/i);
   }
+
+  // Le système d'encadrement est placé avec les avis SOI et les sorties de classe.
+  [getNode('avis'), getNode('sortie')].filter(Boolean).forEach(node => {
+    setLink(node, ENCADREMENT_URL, 'Voir le système d’encadrement', {
+      match:/systeme d encadrement|progression des interventions/i
+    });
+  });
 
   // Chrome : vrai logo officiel, page de lancement et aucune fausse connexion AppSP.
   const chrome = getNode('chrome') || [...root.querySelectorAll('.searchable')].find(node => /chrome/.test(titleOf(node)));
