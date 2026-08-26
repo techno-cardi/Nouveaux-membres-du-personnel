@@ -5,6 +5,7 @@
 
   const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
   const RESERVATION_GUIDE = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
+  const SEUILS_ACTIONS_URL = 'https://docs.google.com/document/d/1eLHq4MlZK6npD-T-kK3lmWR5eXrDC4oRvC_8nQyu36M/edit?usp=sharing';
 
   document.title = 'Guide pour les nouveaux membres du personnel | Cardinal-Roy';
 
@@ -70,7 +71,6 @@
   input.addEventListener('input', scheduleHighlight);
   input.addEventListener('focus', scheduleHighlight);
 
-  // Quelques formulations plus naturelles dans l'interface.
   const mastheadText = document.querySelector('.masthead-copy p');
   if (mastheadText) mastheadText.textContent = 'Les outils, les liens et les procédures utiles à l’école.';
 
@@ -86,7 +86,6 @@
   const directoryHelp = document.querySelector('.directory-intro p');
   if (directoryHelp) directoryHelp.textContent = 'Ouvrez une section ou utilisez la recherche pour aller directement à ce qu’il vous faut.';
 
-  // Les noms d'applications deviennent des liens lorsqu'ils sont mentionnés dans une explication.
   const appLinks = new Map([
     ['mes suivis','https://appsp.ca/messuivis/'],
     ['reservation','https://appsp.ca/reservation/'],
@@ -117,7 +116,6 @@
     link.appendChild(strong);
   });
 
-  // Avis dans Mozaïk Portail : nom, bouton et formulation parent.
   const avis = document.getElementById('avis');
   if (avis) {
     const title = avis.querySelector('.procedure-title');
@@ -134,6 +132,18 @@
         login.classList.add('btn','primary');
       }
 
+      const seuilsLink = [...body.querySelectorAll('a')].find(a => {
+        const text = normalize(a.textContent);
+        const href = a.getAttribute('href') || '';
+        return text.includes('systeme d encadrement') || href.includes('1x3FtPGjXHO98NtOc2zvgWUVCVqPhZFcP');
+      });
+      if (seuilsLink) {
+        seuilsLink.href = SEUILS_ACTIONS_URL;
+        seuilsLink.target = '_blank';
+        seuilsLink.rel = 'noopener noreferrer';
+        seuilsLink.textContent = 'Seuils et actions à poser';
+      }
+
       body.querySelectorAll('p,li,.callout').forEach(el => {
         const text = normalize(el.textContent);
         if (text.includes('selon l intention et les regles de l ecole')) {
@@ -143,7 +153,6 @@
     }
   }
 
-  // Tour de table : délai fixe de 7 jours.
   const tourtable = document.getElementById('tourtable');
   if (tourtable) {
     const body = tourtable.querySelector('.procedure-content');
@@ -155,7 +164,6 @@
     }
   }
 
-  // Réservation / convocation : un seul guide, avec le bon lien.
   [...document.querySelectorAll('.procedure')].forEach(procedure => {
     const title = normalize(procedure.querySelector('.procedure-title')?.textContent || '');
     if (!/reservation|convocation|convoquer|recuperation|reprise d examen/.test(title)) return;
@@ -182,7 +190,6 @@
     });
   });
 
-  // Les catégories doivent toujours mener à une vraie section de la page.
   const nav = document.querySelector('.section-nav-inner');
   if (nav) {
     [...nav.querySelectorAll('a[href^="#section-"]')].forEach(link => {
@@ -205,7 +212,6 @@
     return title.includes('chrome') && (title.includes('favori') || title.includes('lancement'));
   });
 
-  // Chrome fait maintenant partie du bloc de raccourcis, sous Windows + V.
   const shortcutNote = document.querySelector('.shortcut-note');
   document.querySelector('.chrome-starter-strip')?.remove();
 
