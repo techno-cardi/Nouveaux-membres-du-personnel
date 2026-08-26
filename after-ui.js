@@ -5,11 +5,26 @@
 
   const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
 
+  document.title = 'Guide pour les nouveaux membres du personnel | Cardinal-Roy';
+
   const normalize = value => (value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
+
+  const correctMozaik = root => {
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      node.nodeValue = (node.nodeValue || '')
+        .replace(/Mosaïk/g, 'Mozaïk')
+        .replace(/Mosaik/g, 'Mozaïk')
+        .replace(/Mosaik/g, 'Mozaïk');
+    });
+  };
 
   const accentPattern = token => {
     const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -36,16 +51,21 @@
   };
 
   const applyHighlights = () => {
+    correctMozaik(document.getElementById('app'));
     const tokens = normalize(input.value).split(/\s+/).filter(Boolean);
     if (!tokens.length) return;
 
     suggestions.querySelectorAll('.suggestion-copy strong, .suggestion-copy small').forEach(el => {
       if (!el.dataset.originalSearchText) el.dataset.originalSearchText = el.textContent || '';
+      el.dataset.originalSearchText = el.dataset.originalSearchText
+        .replace(/Mosaïk/g, 'Mozaïk')
+        .replace(/Mosaik/g, 'Mozaïk');
       el.innerHTML = highlightText(el.dataset.originalSearchText, tokens);
       el.classList.add('search-highlighted');
     });
   };
 
+  correctMozaik(document.getElementById('app'));
   const scheduleHighlight = () => queueMicrotask(applyHighlights);
   input.addEventListener('input', scheduleHighlight);
   input.addEventListener('focus', scheduleHighlight);
