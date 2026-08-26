@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7f1427">
+<meta name="description" content="Guide express du personnel de l'École secondaire Cardinal-Roy">
+<title>Guide express du personnel | Cardinal-Roy</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="logo.css">
+</head>
+<body>
+<div id="app"></div>
+<script>
+Promise.all(['fragment-1.html','fragment-2.html','fragment-3.html','fragment-4.html'].map(f=>fetch(f).then(r=>{if(!r.ok) throw new Error(f); return r.text();})))
+  .then(parts=>{document.getElementById('app').outerHTML=parts.join(''); const s=document.createElement('script'); s.src='script.js'; document.body.appendChild(s);})
+  .catch(()=>{document.getElementById('app').innerHTML='<main class="shell" style="padding:40px 0"><h1 style="color:#172033">Le guide n’a pas pu être chargé.</h1><p>Rechargez la page.</p></main>';});
+</script>
+</body>
+</html>
