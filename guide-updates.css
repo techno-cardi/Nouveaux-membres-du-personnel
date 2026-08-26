@@ -1,0 +1,182 @@
+/* Ajustements ciblés : recherche, Chrome, favoris et logos d'applications. */
+
+/* La recherche est volontairement l'élément central du haut de page. */
+.search-stage{
+  background:#7f1427;
+  color:#fff;
+  padding:34px 0 30px;
+}
+.search-stage-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.search-intro{
+  width:min(820px,100%);
+  text-align:center;
+}
+.search-intro h2{
+  margin:0;
+  color:#fff;
+  font-size:clamp(1.6rem,3vw,2.2rem);
+}
+.search-intro p{
+  margin:7px auto 18px;
+  max-width:64ch;
+  color:#f3dfe4;
+}
+.search-shell{
+  position:relative;
+  width:min(820px,100%);
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  min-height:58px;
+  background:#fff;
+  color:#22211f;
+  border:2px solid rgba(255,255,255,.85);
+  border-radius:10px;
+  box-shadow:0 10px 26px rgba(69,8,22,.18);
+}
+.search-shell:focus-within{
+  border-color:#fff;
+  box-shadow:0 0 0 4px rgba(255,255,255,.2),0 10px 26px rgba(69,8,22,.2);
+}
+.search-glass{display:grid;place-items:center;font-size:1.05rem}
+#guide-search{
+  width:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:15px 8px;
+  color:#22211f;
+  font-size:1.05rem;
+}
+.search-key{margin-right:12px}
+.search-under{
+  width:min(820px,100%);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:9px;
+}
+.search-status{color:#f3dfe4}
+.favorites-jump{color:#fff}
+
+/* Le menu de suggestions est collé visuellement à la barre de recherche. */
+.search-suggestions{
+  position:absolute;
+  top:calc(100% + 7px);
+  left:0;
+  right:0;
+  z-index:200;
+  overflow:hidden;
+  background:#fff;
+  color:#22211f;
+  border:1px solid #d7c8cc;
+  border-radius:9px;
+  box-shadow:0 18px 36px rgba(50,8,18,.2);
+}
+.suggestion{
+  width:100%;
+  border:0;
+  border-bottom:1px solid #eee7e9;
+  background:#fff;
+  color:#22211f;
+  text-align:left;
+}
+.suggestion:last-child{border-bottom:0}
+.suggestion:hover,.suggestion:focus-visible{background:#fbf4f6}
+.suggestion-copy strong.search-highlighted,
+.suggestion-copy small.search-highlighted{
+  font-weight:500;
+}
+.suggestion-copy small.search-highlighted{font-weight:400}
+.search-hit{
+  background:transparent;
+  color:#7f1427;
+  font-weight:800;
+  padding:0;
+}
+
+/* Rappel Chrome compact : après les accès rapides, jamais avant. */
+.chrome-starter-strip{
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;
+  gap:16px;
+  align-items:center;
+  margin:22px 0 0;
+  padding:14px 16px;
+  background:#fff;
+  border:1px solid #ddd3d6;
+  border-left:4px solid #7f1427;
+  border-radius:8px;
+}
+.chrome-strip-logo{
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+}
+.chrome-strip-logo img{max-width:38px;max-height:38px;object-fit:contain}
+.chrome-strip-logo.emoji{font-size:1.45rem}
+.chrome-strip-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.chrome-strip-copy strong{font-size:.96rem;color:#2d292a}
+.chrome-strip-copy>span{font-size:.84rem;color:#68645e}
+.chrome-strip-action{
+  min-height:40px;
+  padding:8px 12px;
+  border:1px solid #7f1427;
+  border-radius:7px;
+  background:#fff;
+  color:#7f1427;
+  font-weight:700;
+  cursor:pointer;
+}
+.chrome-strip-action:hover{background:#fbf0f3}
+
+/* Explication complète, visible seulement quand l'utilisateur ouvre la fiche Chrome. */
+.chrome-learning{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid #ded3d6;
+}
+.chrome-learning-lead{
+  padding:14px 16px;
+  background:#fbf4f6;
+  border-left:4px solid #7f1427;
+  border-radius:6px;
+}
+.chrome-learning-lead>strong{font-size:1rem}
+.chrome-learning-lead p{margin:6px 0 0!important}
+.chrome-howto{margin-top:14px;border-top:1px solid #e7dee0}
+.chrome-howto-step{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr);
+  gap:12px;
+  padding:15px 0;
+  border-bottom:1px solid #e7dee0;
+}
+.chrome-step-number{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:#7f1427;
+  color:#fff;
+  font-weight:800;
+  font-size:.8rem;
+}
+.chrome-howto h4{margin:1px 0 5px;font-size:1rem}
+.chrome-howto p{margin:5px 0!important}
+
+@media(max-width:720px){
+  .search-stage{padding:28px 0 26px}
+  .search-shell{grid-template-columns:30px minmax(0,1fr);border-radius:8px}
+  .search-key{display:none}
+  .search-under{align-items:flex-start;flex-direction:column;gap:5px}
+  .chrome-starter-strip{grid-template-columns:40px minmax(0,1fr);gap:12px}
+  .chrome-strip-action{grid-column:1/-1;width:100%}
+}
