@@ -3,13 +3,14 @@
   const app = document.getElementById('app');
   if (!source || !app) return;
 
-  const stripEmoji = value => (value || '')
-    .replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '')
-    .replace(/^[\s•·–—→←⚡✓✔✕✖]+/u, '')
+  const FAVORITES_KEY = 'cardi-guide-favorites-v1';
+
+  const stripLeadingEmoji = value => (value || '')
+    .replace(/^[\s\p{Extended_Pictographic}\uFE0F•·–—→←⚡✓✔✕✖]+/gu, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  const normalize = value => stripEmoji(value)
+  const normalize = value => (value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -18,44 +19,57 @@
     .replace(/\s+/g, ' ')
     .trim();
 
-  const cleanVisibleText = root => {
+  const escapeHtml = value => String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  const cleanBody = root => {
     root.querySelectorAll('.keywords,.keyword,.badge,.card-icon').forEach(el => el.remove());
-    root.querySelectorAll('i').forEach(el => {
-      if (!(el.textContent || '').trim() || /[\p{Extended_Pictographic}]/u.test(el.textContent || '')) el.remove();
-    });
-
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node => {
-      node.nodeValue = (node.nodeValue || '').replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '');
-    });
-
     root.querySelectorAll('p').forEach(p => {
       const text = normalize(p.textContent);
-      if (text.includes('appsp s ecrit exactement ainsi') || text.includes('appsp s ecrit exactement')) {
+      if (text.includes('appsp s ecrit exactement ainsi')) {
         p.innerHTML = 'Connectez-vous à <strong>AppSP</strong> avec votre compte institutionnel Google ou Microsoft.';
       }
     });
-
     root.querySelectorAll('.callout strong').forEach(strong => {
       const text = normalize(strong.textContent);
       if (/^(a retenir|a connaitre|important|attention)/.test(text)) {
         strong.textContent = text.startsWith('attention') ? 'Note : ' : 'Bon à savoir : ';
       }
     });
+    root.querySelectorAll('a[target="_blank"]').forEach(a => a.setAttribute('rel', 'noopener noreferrer'));
+  };
 
-    root.querySelectorAll('a[target="_blank"]').forEach(a => {
-      a.setAttribute('rel', 'noopener noreferrer');
-    });
+  const fallbackEmoji = (id, title = '') => {
+    const text = normalize(`${id} ${title}`);
+    if (/appsp|connexion|compte|authent/.test(text)) return '🔐';
+    if (/mosaik|mozaik|presence|retard/.test(text)) return '✅';
+    if (/sortie|expulsion|retrait/.test(text)) return '🚪';
+    if (/avis|note|suivi/.test(text)) return '📝';
+    if (/reservation|horaire|convocation|examen|reprise/.test(text)) return '📅';
+    if (/chromebook|ordinateur|portable/.test(text)) return '💻';
+    if (/courriel|parent|message/.test(text)) return '✉️';
+    if (/plan de classe/.test(text)) return '🪑';
+    if (/intervention|adaptation|mesure/.test(text)) return '🧩';
+    if (/drive|document|dossier/.test(text)) return '📁';
+    if (/chrome|web|navigateur/.test(text)) return '🌐';
+    if (/absence|plan de travail/.test(text)) return '📋';
+    if (/tutoriel|video/.test(text)) return '🎥';
+    return '📌';
   };
 
   const items = [...source.querySelectorAll('.searchable')].map((node, index) => {
     const rawTitle = node.dataset.title || node.querySelector('h2,h3')?.textContent || `Procédure ${index + 1}`;
-    const title = stripEmoji(rawTitle);
-    const subtitle = stripEmoji(node.querySelector('.card-sub')?.textContent || '');
+    const title = stripLeadingEmoji(rawTitle);
+    const subtitle = stripLeadingEmoji(node.querySelector('.card-sub')?.textContent || '');
     const id = node.id || `procedure-${index + 1}`;
     const keywords = node.dataset.keywords || '';
+    const originalIcon = node.dataset.icon || '';
+    const logoNode = node.querySelector('.card-head img, .app-logo');
+    const logoSrc = logoNode?.src || logoNode?.getAttribute('src') || '';
+    const logoAlt = stripLeadingEmoji(logoNode?.getAttribute('alt') || '');
 
     let body;
     const cardBody = node.querySelector('.card-body');
@@ -74,9 +88,7 @@
       });
     }
 
-    cleanVisibleText(body);
-
-    // Normalise les étapes une seule fois pour éviter les coupures de texte.
+    cleanBody(body);
     body.querySelectorAll('.steps > li').forEach(li => {
       if (li.querySelector(':scope > .step-content')) return;
       const wrapper = document.createElement('div');
@@ -90,71 +102,147 @@
       title,
       subtitle,
       keywords,
+      originalIcon,
+      logoSrc,
+      logoAlt,
       body,
-      haystack: normalize(`${title} ${subtitle} ${keywords} ${body.textContent}`)
+      haystack: normalize(`${title} ${subtitle} ${keywords} ${logoAlt} ${body.textContent}`)
     };
   });
 
   const categoryRules = [
-    {
-      id: 'commencer',
-      label: 'Commencer',
-      description: 'Accès, comptes et réglages de base.',
-      match: /connexion|appsp|premier|commencer|nouveau|favori|lancement/
-    },
-    {
-      id: 'classe',
-      label: 'Gérer la classe',
-      description: 'Présences, avis, sorties et fonctionnement quotidien.',
-      match: /sortie|expulsion|avis|presence|retard|plan de classe|comportement|organisationnel|discipline/
-    },
-    {
-      id: 'suivi',
-      label: 'Suivre un élève',
-      description: 'Traces, communications, plans et mesures d’adaptation.',
-      match: /suivi|note evolutive|tour de table|intervention|adaptation|parent|courriel|absence|plan de travail|tuteur/
-    },
-    {
-      id: 'organisation',
-      label: 'Organiser',
-      description: 'Réservations, locaux, examens et matériel.',
-      match: /reservation|reserver|chromebook|chariot|local|examen|reprise|convocation|horaire|recuperation/
-    },
-    {
-      id: 'outils',
-      label: 'Outils et ressources',
-      description: 'Drive, Chrome, logiciels et ressources communes.',
-      match: /drive|chrome|microsoft|google|wordq|lexibar|antidote|outil|ressource|document|tutoriel/
-    }
+    { id:'commencer', label:'Commencer', icon:'🔐', description:'Accès, comptes et réglages de base.', match:/connexion|appsp|premier|commencer|nouveau|favori|lancement/ },
+    { id:'classe', label:'Gérer la classe', icon:'🧑‍🏫', description:'Présences, avis, sorties et fonctionnement quotidien.', match:/sortie|expulsion|avis|presence|retard|plan de classe|comportement|organisationnel|discipline/ },
+    { id:'suivi', label:'Suivre un élève', icon:'📝', description:'Traces, communications, plans et mesures d’adaptation.', match:/suivi|note evolutive|tour de table|intervention|adaptation|parent|courriel|absence|plan de travail|tuteur/ },
+    { id:'organisation', label:'Organiser', icon:'📅', description:'Réservations, locaux, examens et matériel.', match:/reservation|reserver|chromebook|chariot|local|examen|reprise|convocation|horaire|recuperation/ },
+    { id:'outils', label:'Outils et ressources', icon:'🧰', description:'Drive, Chrome, logiciels et ressources communes.', match:/drive|chrome|microsoft|google|wordq|lexibar|antidote|outil|ressource|document|tutoriel/ }
   ];
 
   const groups = categoryRules.map(rule => ({ ...rule, items: [] }));
   items.forEach(item => {
-    const text = item.haystack;
-    let group = groups.find(candidate => candidate.match.test(text));
-    if (!group) group = groups[groups.length - 1];
+    const group = groups.find(candidate => candidate.match.test(item.haystack)) || groups[groups.length - 1];
     group.items.push(item);
   });
 
-  // Évite que la connexion AppSP soit doublée par des explications inutiles.
   const appsp = items.find(item => item.id === 'connexion-appsp' || normalize(item.title).includes('appsp'));
   if (appsp) {
-    appsp.body.querySelectorAll('p').forEach((p, i) => {
-      const text = normalize(p.textContent);
-      if (i === 0 && !text.includes('compte institutionnel')) {
-        p.innerHTML = 'Connectez-vous à <strong>AppSP</strong> avec votre compte institutionnel Google ou Microsoft.';
-      }
-    });
+    const first = appsp.body.querySelector('p');
+    if (first) first.innerHTML = 'Connectez-vous à <strong>AppSP</strong> avec votre compte institutionnel Google ou Microsoft.';
   }
 
   const preferredQuickIds = ['sortie','presences','avis','reservation','chromebook','courriels','planclasse','pi'];
-  const quickItems = preferredQuickIds
-    .map(id => items.find(item => item.id === id))
-    .filter(Boolean);
+  const quickItems = preferredQuickIds.map(id => items.find(item => item.id === id)).filter(Boolean);
   items.forEach(item => {
-    if (quickItems.length >= 8) return;
-    if (!quickItems.includes(item)) quickItems.push(item);
+    if (quickItems.length < 8 && !quickItems.includes(item)) quickItems.push(item);
   });
+
+  const realApps = [];
+  const seenLogos = new Set();
+  [...items]
+    .sort((a,b) => {
+      const score = item => /appsp|mosaik|mozaik|mes suivis|portail/i.test(`${item.title} ${item.logoAlt}`) ? 0 : 1;
+      return score(a) - score(b);
+    })
+    .forEach(item => {
+      if (!item.logoSrc || seenLogos.has(item.logoSrc) || realApps.length >= 5) return;
+      seenLogos.add(item.logoSrc);
+      realApps.push(item);
+    });
+
+  const visualFor = (item, className='item-visual') => item.logoSrc
+    ? `<span class="${className} real-logo"><img src="${escapeHtml(item.logoSrc)}" alt="${escapeHtml(item.logoAlt || item.title)}"></span>`
+    : `<span class="${className} emoji-visual" aria-hidden="true">${item.originalIcon || fallbackEmoji(item.id,item.title)}</span>`;
+
+  let favorites;
+  try {
+    favorites = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
+  } catch {
+    favorites = new Set();
+  }
+  const saveFavorites = () => localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
+
+  app.innerHTML = `
+    <header class="site-header">
+      <div class="page masthead">
+        <div class="school-mark" aria-label="École secondaire Cardinal-Roy">
+          <div class="official-logo" role="img" aria-label="Logo de l’École secondaire Cardinal-Roy"></div>
+        </div>
+        <div class="masthead-copy">
+          <h1>Guide du personnel</h1>
+          <p>Cardinal-Roy · procédures et ressources du quotidien</p>
+        </div>
+      </div>
+
+      <div class="search-stage">
+        <div class="page search-stage-inner">
+          <div class="search-intro">
+            <h2>Qu’est-ce que vous cherchez?</h2>
+            <p>Tapez un mot, une application ou une situation : les suggestions apparaissent pendant que vous écrivez.</p>
+          </div>
+          <div class="search-shell">
+            <span class="search-glass" aria-hidden="true">🔎</span>
+            <input id="guide-search" name="guide-search" type="search" autocomplete="off" aria-autocomplete="list" aria-controls="search-suggestions" aria-expanded="false" placeholder="Ex. absence prolongée, Mosaïk, Chromebook, sortie de classe…">
+            <span class="search-key" aria-hidden="true">Ctrl K</span>
+            <div id="search-suggestions" class="search-suggestions" role="listbox" hidden></div>
+          </div>
+          <div class="search-under">
+            <span id="search-status" class="search-status" aria-live="polite"></span>
+            <button type="button" class="favorites-jump" id="favorites-jump"><span aria-hidden="true">★</span> Mes favoris <span id="favorites-count">${favorites.size}</span></button>
+          </div>
+          ${realApps.length ? `<div class="app-ribbon" aria-label="Applications utilisées dans le guide">
+            <span class="app-ribbon-label">Applications</span>
+            ${realApps.map(item => `<button type="button" class="app-chip" data-open-id="${escapeHtml(item.id)}">${visualFor(item,'app-chip-icon')}<span>${escapeHtml(item.logoAlt.replace(/^Logo\s+/i,'') || item.title)}</span></button>`).join('')}
+          </div>` : ''}
+        </div>
+      </div>
+    </header>
+
+    <nav class="section-nav" aria-label="Sections du guide">
+      <div class="page section-nav-inner">
+        ${groups.map(group => `<a href="#section-${group.id}"><span aria-hidden="true">${group.icon}</span>${group.label}</a>`).join('')}
+      </div>
+    </nav>
+
+    <main class="page main-layout">
+      <section class="favorites-area" id="favorites-area" aria-labelledby="favorites-title" ${favorites.size ? '' : 'hidden'}>
+        <div class="section-heading-row">
+          <div><h2 id="favorites-title">Mes favoris</h2><p>Vos procédures épinglées sur cet appareil.</p></div>
+        </div>
+        <div id="favorite-links" class="favorite-links"></div>
+      </section>
+
+      <section class="quick-area" aria-labelledby="quick-title">
+        <div class="quick-main">
+          <div class="section-heading-row">
+            <div><h2 id="quick-title">Accès rapide</h2><p>Les tâches les plus fréquentes, sans passer par toute la liste.</p></div>
+          </div>
+          <div class="quick-links">
+            ${quickItems.map(item => `<a href="#${item.id}">${visualFor(item,'quick-visual')}<span class="quick-label">${escapeHtml(item.title)}</span><span aria-hidden="true">→</span></a>`).join('')}
+          </div>
+        </div>
+        <aside class="shortcut-note" aria-labelledby="shortcut-title">
+          <h2 id="shortcut-title">📋 Raccourci Windows</h2>
+          <p><span class="key-row"><kbd>Windows</kbd><span>+</span><kbd>V</kbd></span> ouvre l’historique du presse-papiers. À la première utilisation, choisissez <strong>Activer</strong>.</p>
+        </aside>
+      </section>
+
+      <section class="directory" aria-labelledby="directory-title">
+        <div class="directory-intro">
+          <h2 id="directory-title">Toutes les procédures</h2>
+          <p>Parcourez les sections ou utilisez la recherche au-dessus pour aller directement au bon endroit.</p>
+        </div>
+        <div id="category-sections"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page footer-row">
+        <span>École secondaire Cardinal-Roy</span>
+        <button type="button" id="print-guide">🖨️ Imprimer le guide</button>
+      </div>
+    </footer>`;
+
+  const categoryHost = document.getElementById('category-sections');
 
   const renderProcedure = item => {
     const details = document.createElement('details');
@@ -163,168 +251,188 @@
     details.dataset.search = item.haystack;
 
     const summary = document.createElement('summary');
-    summary.innerHTML = `<span class="procedure-title">${item.title}</span>${item.subtitle ? `<span class="procedure-subtitle">${item.subtitle}</span>` : ''}`;
+    summary.innerHTML = `
+      ${visualFor(item,'procedure-visual')}
+      <span class="procedure-labels">
+        <span class="procedure-title">${escapeHtml(item.title)}</span>
+        ${item.subtitle ? `<span class="procedure-subtitle">${escapeHtml(item.subtitle)}</span>` : ''}
+      </span>
+      <button type="button" class="favorite-button" data-favorite-id="${escapeHtml(item.id)}" aria-label="Ajouter ${escapeHtml(item.title)} aux favoris" aria-pressed="false" title="Ajouter aux favoris">☆</button>`;
 
     const content = document.createElement('div');
     content.className = 'procedure-content';
     content.appendChild(item.body);
-
     details.append(summary, content);
     return details;
   };
 
-  app.innerHTML = `
-    <header class="site-header">
-      <div class="page header-row">
-        <div class="school-mark" aria-label="École secondaire Cardinal-Roy">
-          <div class="official-logo" role="img" aria-label="Logo de l’École secondaire Cardinal-Roy"></div>
-        </div>
-        <div class="header-copy">
-          <h1>Guide du personnel</h1>
-          <p>Les procédures et ressources utiles au quotidien, au même endroit.</p>
-        </div>
-        <div class="header-search">
-          <label for="guide-search">Rechercher</label>
-          <div class="search-control">
-            <input id="guide-search" name="guide-search" type="search" autocomplete="off" placeholder="Ex. absence, Chromebook, parent…">
-            <span class="search-key" aria-hidden="true">Ctrl K</span>
-          </div>
-          <div id="search-status" class="search-status" aria-live="polite"></div>
-        </div>
-      </div>
-    </header>
-
-    <nav class="section-nav" aria-label="Sections du guide">
-      <div class="page section-nav-inner">
-        ${groups.map(group => `<a href="#section-${group.id}">${group.label}</a>`).join('')}
-      </div>
-    </nav>
-
-    <main class="page main-layout">
-      <section class="quick-area" aria-labelledby="quick-title">
-        <div class="quick-main">
-          <div class="section-heading-row">
-            <div>
-              <h2 id="quick-title">Accès rapide</h2>
-              <p>Les tâches que vous chercherez probablement le plus souvent.</p>
-            </div>
-          </div>
-          <div class="quick-links">
-            ${quickItems.map(item => `<a href="#${item.id}"><span>${item.title}</span><span aria-hidden="true">→</span></a>`).join('')}
-          </div>
-        </div>
-        <aside class="shortcut-note" aria-labelledby="shortcut-title">
-          <h2 id="shortcut-title">Raccourci Windows</h2>
-          <p><span class="key-row"><kbd>Windows</kbd><span>+</span><kbd>V</kbd></span> ouvre l’historique du presse-papiers. À la première utilisation, choisissez <strong>Activer</strong>.</p>
-        </aside>
-      </section>
-
-      <section class="directory" aria-labelledby="directory-title">
-        <div class="directory-intro">
-          <h2 id="directory-title">Toutes les procédures</h2>
-          <p>Choisissez une section, puis ouvrez seulement la procédure dont vous avez besoin.</p>
-        </div>
-        <div id="category-sections"></div>
-        <div id="empty-search" class="empty-search" hidden>Aucune procédure ne correspond à cette recherche.</div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="page footer-row">
-        <span>École secondaire Cardinal-Roy</span>
-        <button type="button" id="print-guide">Imprimer le guide</button>
-      </div>
-    </footer>`;
-
-  const categoryHost = document.getElementById('category-sections');
   groups.forEach(group => {
     if (!group.items.length) return;
     const section = document.createElement('section');
     section.className = 'category-section';
     section.id = `section-${group.id}`;
     section.dataset.category = group.id;
-    section.innerHTML = `
-      <header class="category-heading">
-        <h2>${group.label}</h2>
-        <p>${group.description}</p>
-      </header>
-      <div class="procedure-list"></div>`;
+    section.innerHTML = `<header class="category-heading"><h2><span aria-hidden="true">${group.icon}</span>${group.label}</h2><p>${group.description}</p></header><div class="procedure-list"></div>`;
     const list = section.querySelector('.procedure-list');
     group.items.forEach(item => list.appendChild(renderProcedure(item)));
     categoryHost.appendChild(section);
   });
 
   const input = document.getElementById('guide-search');
+  const suggestions = document.getElementById('search-suggestions');
   const status = document.getElementById('search-status');
-  const empty = document.getElementById('empty-search');
-  const procedures = [...document.querySelectorAll('.procedure')];
-  const categorySections = [...document.querySelectorAll('.category-section')];
+  const favoritesArea = document.getElementById('favorites-area');
+  const favoriteLinks = document.getElementById('favorite-links');
+  const favoritesCount = document.getElementById('favorites-count');
+
+  const itemById = new Map(items.map(item => [item.id,item]));
+
+  const syncFavoriteButtons = () => {
+    document.querySelectorAll('[data-favorite-id]').forEach(button => {
+      const active = favorites.has(button.dataset.favoriteId);
+      button.textContent = active ? '★' : '☆';
+      button.classList.toggle('is-favorite', active);
+      button.setAttribute('aria-pressed', String(active));
+      button.setAttribute('title', active ? 'Retirer des favoris' : 'Ajouter aux favoris');
+      const item = itemById.get(button.dataset.favoriteId);
+      if (item) button.setAttribute('aria-label', `${active ? 'Retirer' : 'Ajouter'} ${item.title} ${active ? 'des' : 'aux'} favoris`);
+    });
+  };
+
+  const renderFavorites = () => {
+    favoritesCount.textContent = favorites.size;
+    favoritesArea.hidden = favorites.size === 0;
+    favoriteLinks.innerHTML = [...favorites]
+      .map(id => itemById.get(id))
+      .filter(Boolean)
+      .map(item => `<a href="#${item.id}">${visualFor(item,'favorite-visual')}<span>${escapeHtml(item.title)}</span><span aria-hidden="true">→</span></a>`)
+      .join('');
+    syncFavoriteButtons();
+  };
+
+  const toggleFavorite = id => {
+    if (!itemById.has(id)) return;
+    favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+    saveFavorites();
+    renderFavorites();
+  };
 
   const openTarget = id => {
     const target = document.getElementById(id);
     if (!target?.classList.contains('procedure')) return;
     target.open = true;
-    requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    history.replaceState(null, '', `#${id}`);
+    requestAnimationFrame(() => target.scrollIntoView({ behavior:'smooth', block:'start' }));
   };
 
-  document.addEventListener('click', event => {
-    const anchor = event.target.closest('a[href^="#"]');
-    if (!anchor) return;
-    const id = decodeURIComponent(anchor.getAttribute('href').slice(1));
-    const target = document.getElementById(id);
-    if (!target) return;
-    if (target.classList.contains('procedure')) {
-      event.preventDefault();
-      history.replaceState(null, '', `#${id}`);
-      openTarget(id);
+  const searchMatches = query => {
+    const q = normalize(query);
+    if (!q) return [];
+    const tokens = q.split(' ').filter(Boolean);
+    return items
+      .filter(item => tokens.every(token => item.haystack.includes(token)))
+      .sort((a,b) => {
+        const at = normalize(a.title);
+        const bt = normalize(b.title);
+        const as = at.startsWith(q) ? 0 : at.includes(q) ? 1 : 2;
+        const bs = bt.startsWith(q) ? 0 : bt.includes(q) ? 1 : 2;
+        return as - bs || a.title.localeCompare(b.title,'fr');
+      })
+      .slice(0,7);
+  };
+
+  const hideSuggestions = () => {
+    suggestions.hidden = true;
+    suggestions.innerHTML = '';
+    input.setAttribute('aria-expanded','false');
+    status.textContent = '';
+  };
+
+  const renderSuggestions = () => {
+    const matches = searchMatches(input.value);
+    if (!input.value.trim()) {
+      hideSuggestions();
+      return;
+    }
+    input.setAttribute('aria-expanded','true');
+    suggestions.hidden = false;
+    status.textContent = matches.length ? `${matches.length} suggestion${matches.length > 1 ? 's' : ''}` : 'Aucune suggestion';
+    suggestions.innerHTML = matches.length
+      ? matches.map((item,index) => `<button type="button" class="suggestion" role="option" data-open-id="${escapeHtml(item.id)}" data-suggestion-index="${index}">${visualFor(item,'suggestion-visual')}<span class="suggestion-copy"><strong>${escapeHtml(item.title)}</strong>${item.subtitle ? `<small>${escapeHtml(item.subtitle)}</small>` : ''}</span><span class="suggestion-arrow" aria-hidden="true">→</span></button>`).join('')
+      : `<div class="no-suggestion">Essayez un autre mot : nom d’application, tâche, élève, absence, réservation…</div>`;
+  };
+
+  input.addEventListener('input', renderSuggestions);
+  input.addEventListener('focus', renderSuggestions);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      const first = searchMatches(input.value)[0];
+      if (first) {
+        event.preventDefault();
+        hideSuggestions();
+        input.blur();
+        openTarget(first.id);
+      }
+    }
+    if (event.key === 'Escape') {
+      input.value = '';
+      hideSuggestions();
+      input.blur();
     }
   });
 
-  const runSearch = () => {
-    const query = normalize(input.value);
-    let matches = 0;
+  document.addEventListener('click', event => {
+    const favorite = event.target.closest('[data-favorite-id]');
+    if (favorite) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleFavorite(favorite.dataset.favoriteId);
+      return;
+    }
 
-    procedures.forEach(procedure => {
-      const visible = !query || procedure.dataset.search.includes(query) || query.split(' ').every(token => procedure.dataset.search.includes(token));
-      procedure.hidden = !visible;
-      if (visible) {
-        matches += 1;
-        if (query) procedure.open = true;
-      } else {
-        procedure.open = false;
+    const openButton = event.target.closest('[data-open-id]');
+    if (openButton) {
+      event.preventDefault();
+      hideSuggestions();
+      openTarget(openButton.dataset.openId);
+      return;
+    }
+
+    const anchor = event.target.closest('a[href^="#"]');
+    if (anchor) {
+      const id = decodeURIComponent(anchor.getAttribute('href').slice(1));
+      const target = document.getElementById(id);
+      if (target?.classList.contains('procedure')) {
+        event.preventDefault();
+        openTarget(id);
+        return;
       }
-    });
+    }
 
-    categorySections.forEach(section => {
-      const visibleChildren = [...section.querySelectorAll('.procedure')].some(item => !item.hidden);
-      section.hidden = !visibleChildren;
-    });
+    if (!event.target.closest('.search-shell')) hideSuggestions();
+  });
 
-    empty.hidden = matches > 0;
-    status.textContent = query ? `${matches} résultat${matches > 1 ? 's' : ''}` : '';
-  };
-
-  input.addEventListener('input', runSearch);
   document.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       input.focus();
       input.select();
     }
-    if (event.key === 'Escape' && document.activeElement === input) {
-      input.value = '';
-      runSearch();
-      input.blur();
-    }
+  });
+
+  document.getElementById('favorites-jump')?.addEventListener('click', () => {
+    if (favorites.size) favoritesArea.scrollIntoView({behavior:'smooth',block:'start'});
+    else document.querySelector('.favorite-button')?.focus();
   });
 
   document.getElementById('print-guide')?.addEventListener('click', () => window.print());
+
+  renderFavorites();
 
   if (location.hash) {
     const id = decodeURIComponent(location.hash.slice(1));
     setTimeout(() => openTarget(id), 80);
   }
 
-  // L'ancien DOM n'est plus utilisé : il ne reste que comme source de contenu invisible.
   source.replaceChildren();
 })();
