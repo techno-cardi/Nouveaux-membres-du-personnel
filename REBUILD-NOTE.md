@@ -1,0 +1,1 @@
+Cette branche remplace entièrement l’interface visible du guide. Les anciens fragments `body-part-*.txt` servent uniquement de source de contenu; leur structure visuelle n’est plus rendue. L’interface est reconstruite selon une architecture par tâches et catégories.
