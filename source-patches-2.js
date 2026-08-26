@@ -78,7 +78,17 @@
       reservationNodes.add(node);
     }
   });
-  reservationNodes.forEach(node => setTutorial(node,RESERVATION_TUTORIAL_URL,'Voir le tutoriel de Réservation'));
+  reservationNodes.forEach(node => {
+    setTutorial(node,RESERVATION_TUTORIAL_URL,'Voir le tutoriel de Réservation');
+
+    // Le tutoriel actuel indique une fenêtre de réservation de 2 semaines.
+    bodyOf(node)?.querySelectorAll('p,li,.callout').forEach(el => {
+      const text = normalize(el.textContent);
+      if (/4 semaines|4e semaine|quatre semaines/.test(text)) {
+        el.innerHTML = '<strong>Réservations à l’avance :</strong> les ressources informatiques peuvent être réservées jusqu’à 2 semaines à l’avance.';
+      }
+    });
+  });
 
   const reservation = getNode('reservation');
   if (reservation) {
