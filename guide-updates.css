@@ -100,43 +100,10 @@
   padding:0;
 }
 
-/* Rappel Chrome compact : après les accès rapides, jamais avant. */
-.chrome-starter-strip{
-  display:grid;
-  grid-template-columns:48px minmax(0,1fr) auto;
-  gap:16px;
-  align-items:center;
-  margin:22px 0 0;
-  padding:14px 16px;
-  background:#fff;
-  border:1px solid #ddd3d6;
-  border-left:4px solid #7f1427;
-  border-radius:8px;
-}
-.chrome-strip-logo{
-  display:grid;
-  place-items:center;
-  width:42px;
-  height:42px;
-}
-.chrome-strip-logo img{max-width:38px;max-height:38px;object-fit:contain}
-.chrome-strip-logo.emoji{font-size:1.45rem}
-.chrome-strip-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
-.chrome-strip-copy strong{font-size:.96rem;color:#2d292a}
-.chrome-strip-copy>span{font-size:.84rem;color:#68645e}
-.chrome-strip-action{
-  min-height:40px;
-  padding:8px 12px;
-  border:1px solid #7f1427;
-  border-radius:7px;
-  background:#fff;
-  color:#7f1427;
-  font-weight:700;
-  cursor:pointer;
-}
-.chrome-strip-action:hover{background:#fbf0f3}
+/* Les anciennes versions ajoutaient un bandeau Chrome après l'accès rapide : il n'est plus utilisé. */
+.chrome-starter-strip{display:none!important}
 
-/* Explication complète, visible seulement quand l'utilisateur ouvre la fiche Chrome. */
+/* Explication complète, visible dans la fiche Chrome. */
 .chrome-learning{
   margin-top:22px;
   padding-top:18px;
@@ -181,11 +148,168 @@
 .presence-howto{margin-top:14px}
 .presence-howto>.callout{margin-top:10px}
 
+/* Le bloc de droite commence à la hauteur du premier accès rapide. */
+.quick-area{align-items:start}
+.shortcut-note{
+  margin-top:70px!important;
+  padding:16px!important;
+  border:1px solid #d8d0d2!important;
+  border-left:1px solid #d8d0d2!important;
+  border-radius:8px;
+  background:#fff;
+}
+.shortcut-note h2{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:1.02rem!important;
+}
+.shortcut-note p{
+  max-width:none!important;
+  margin-top:8px!important;
+}
+
+.chrome-shortcut-block{
+  margin-top:15px;
+  padding-top:15px;
+  border-top:1px solid #e5dddf;
+}
+.chrome-shortcut-head{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+}
+.chrome-shortcut-head img{
+  width:34px;
+  height:34px;
+  object-fit:contain;
+}
+.chrome-shortcut-head strong{
+  display:block;
+  color:#302b2c;
+  font-size:.93rem;
+}
+.chrome-shortcut-head span{
+  display:block;
+  margin-top:1px;
+  color:#6d6568;
+  font-size:.78rem;
+  line-height:1.35;
+}
+.chrome-help-open{
+  width:100%;
+  min-height:40px;
+  margin-top:11px;
+  padding:8px 10px;
+  border:1px solid #7f1427;
+  border-radius:6px;
+  background:#fff;
+  color:#7f1427;
+  font-weight:700;
+  cursor:pointer;
+}
+.chrome-help-open:hover{background:#fbf0f3}
+
+/* Fenêtre d'aide Chrome centrée. */
+.chrome-help-dialog{
+  width:min(720px,calc(100% - 32px));
+  max-height:min(82vh,760px);
+  padding:0;
+  border:1px solid #cfc5c8;
+  border-radius:12px;
+  background:#fff;
+  color:#272324;
+  box-shadow:0 24px 70px rgba(42,13,20,.28);
+}
+.chrome-help-dialog::backdrop{
+  background:rgba(29,20,22,.55);
+  backdrop-filter:blur(2px);
+}
+.chrome-dialog-header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:20px 22px 17px;
+  background:#fff;
+  border-bottom:1px solid #e5dddf;
+}
+.chrome-dialog-title{
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr);
+  gap:13px;
+  align-items:center;
+}
+.chrome-dialog-title img{
+  width:42px;
+  height:42px;
+  object-fit:contain;
+}
+.chrome-dialog-title h2{
+  margin:0;
+  font-size:1.35rem;
+  line-height:1.18;
+}
+.chrome-dialog-title p{
+  margin:4px 0 0;
+  color:#6b6365;
+  font-size:.87rem;
+}
+.chrome-dialog-close{
+  flex:0 0 auto;
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:#f4eff0;
+  color:#51484b;
+  font-size:1.5rem;
+  line-height:1;
+  cursor:pointer;
+}
+.chrome-dialog-close:hover{background:#eadfe2;color:#7f1427}
+.chrome-dialog-body{
+  padding:4px 22px 24px;
+  overflow:auto;
+}
+.chrome-dialog-body section{
+  padding:16px 0;
+  border-bottom:1px solid #eee7e9;
+}
+.chrome-dialog-body section:last-of-type{border-bottom:0}
+.chrome-dialog-body h3{
+  margin:0 0 6px;
+  font-size:1rem;
+  color:#302b2c;
+}
+.chrome-dialog-body p{
+  margin:6px 0;
+  color:#4d4648;
+  font-size:.91rem;
+}
+.chrome-dialog-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  padding-top:10px;
+}
+.chrome-dialog-actions .btn{cursor:pointer}
+
 @media(max-width:720px){
   .search-stage{padding:28px 0 26px}
   .search-shell{grid-template-columns:30px minmax(0,1fr);border-radius:8px}
   .search-key{display:none}
   .search-under{align-items:flex-start;flex-direction:column;gap:5px}
-  .chrome-starter-strip{grid-template-columns:40px minmax(0,1fr);gap:12px}
-  .chrome-strip-action{grid-column:1/-1;width:100%}
+  .shortcut-note{margin-top:0!important}
+  .chrome-dialog-header{padding:16px}
+  .chrome-dialog-body{padding:3px 16px 18px}
+  .chrome-dialog-title{grid-template-columns:38px minmax(0,1fr);gap:10px}
+  .chrome-dialog-title img{width:34px;height:34px}
+  .chrome-dialog-title h2{font-size:1.15rem}
+  .chrome-dialog-actions{flex-direction:column}
+  .chrome-dialog-actions .btn{width:100%;justify-content:center}
 }
