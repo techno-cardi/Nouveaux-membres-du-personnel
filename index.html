@@ -3,14 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f5f2ec">
+<meta name="theme-color" content="#7f1427">
 <meta name="description" content="Guide du personnel de l'École secondaire Cardinal-Roy">
 <title>Guide du personnel | Cardinal-Roy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="icons.css">
 <link rel="stylesheet" href="logo.css">
 </head>
 <body>
@@ -28,11 +27,7 @@ Promise.all(files.map(f=>fetch(f).then(r=>{if(!r.ok) throw new Error(f); return 
     document.getElementById('legacy-source').innerHTML=decodeUtf8Base64(parts.join(''));
     const script=document.createElement('script');
     script.src='ui-polish.js';
-    script.onload=()=>{
-      const icons=document.createElement('script');
-      icons.src='icons.js';
-      document.body.appendChild(icons);
-    };
+    script.defer=true;
     document.body.appendChild(script);
   })
   .catch(()=>{
