@@ -45,7 +45,7 @@
   const fallbackEmoji = (id, title = '') => {
     const text = normalize(`${id} ${title}`);
     if (/appsp|connexion|compte|authent/.test(text)) return '🔐';
-    if (/mosaik|mozaik|presence|retard/.test(text)) return '✅';
+    if (/mozaik|presence|retard/.test(text)) return '✅';
     if (/sortie|expulsion|retrait/.test(text)) return '🚪';
     if (/avis|note|suivi/.test(text)) return '📝';
     if (/reservation|horaire|convocation|examen|reprise/.test(text)) return '📅';
@@ -111,18 +111,40 @@
   });
 
   const categoryRules = [
-    { id:'commencer', label:'Commencer', icon:'🔐', description:'Accès, comptes et réglages de base.', match:/connexion|appsp|premier|commencer|nouveau|favori|lancement/ },
-    { id:'classe', label:'Gérer la classe', icon:'🧑‍🏫', description:'Présences, avis, sorties et fonctionnement quotidien.', match:/sortie|expulsion|avis|presence|retard|plan de classe|comportement|organisationnel|discipline/ },
-    { id:'suivi', label:'Suivre un élève', icon:'📝', description:'Traces, communications, plans et mesures d’adaptation.', match:/suivi|note evolutive|tour de table|intervention|adaptation|parent|courriel|absence|plan de travail|tuteur/ },
-    { id:'organisation', label:'Organiser', icon:'📅', description:'Réservations, locaux, examens et matériel.', match:/reservation|reserver|chromebook|chariot|local|examen|reprise|convocation|horaire|recuperation/ },
-    { id:'outils', label:'Outils et ressources', icon:'🧰', description:'Drive, Chrome, logiciels et ressources communes.', match:/drive|chrome|microsoft|google|wordq|lexibar|antidote|outil|ressource|document|tutoriel/ }
+    { id:'commencer', label:'Commencer', icon:'🔐', description:'Accès, comptes et réglages de base.' },
+    { id:'classe', label:'Gérer la classe', icon:'🧑‍🏫', description:'Présences, avis, sorties et fonctionnement quotidien.' },
+    { id:'suivi', label:'Suivre un élève', icon:'📝', description:'Traces, communications, plans et mesures d’adaptation.' },
+    { id:'organisation', label:'Organiser', icon:'📅', description:'Réservations, locaux, examens et matériel.' },
+    { id:'outils', label:'Outils et ressources', icon:'🧰', description:'Drive, Chrome, logiciels et ressources communes.' }
   ];
 
+  // Classement volontairement basé d'abord sur l'identifiant et le titre.
+  // On évite ainsi qu'un simple mot générique comme « AppSP » dans le contenu
+  // fasse tomber presque toutes les procédures dans « Commencer ».
+  const exactCategoryById = new Map([
+    ['connexion-appsp','commencer'], ['chrome','commencer'],
+    ['sortie','classe'], ['presences','classe'], ['avis','classe'], ['planclasse','classe'],
+    ['tourtable','suivi'], ['pi','suivi'], ['notes','suivi'], ['courriels','suivi'],
+    ['reservation','organisation'], ['chromebook','organisation'], ['monhoraire','organisation'],
+    ['drive','outils']
+  ]);
+
+  const categoryFor = item => {
+    const exact = exactCategoryById.get(item.id);
+    if (exact) return exact;
+
+    const text = normalize(`${item.id} ${item.title} ${item.subtitle}`);
+    if (/sortie|expulsion|avis|presence|retard|plan de classe|comportement|discipline/.test(text)) return 'classe';
+    if (/suivi|note evolutive|tour de table|plan d intervention|adaptation|parent|courriel|absence|plan de travail|tuteur/.test(text)) return 'suivi';
+    if (/reservation|reserver|chromebook|chariot|local|examen|reprise|convocation|horaire|recuperation/.test(text)) return 'organisation';
+    if (/drive|microsoft|google|wordq|lexibar|antidote|ressource|tutoriel/.test(text)) return 'outils';
+    if (/connexion|premier|commencer|nouveau|favori|lancement|chrome/.test(text)) return 'commencer';
+    return 'outils';
+  };
+
   const groups = categoryRules.map(rule => ({ ...rule, items: [] }));
-  items.forEach(item => {
-    const group = groups.find(candidate => candidate.match.test(item.haystack)) || groups[groups.length - 1];
-    group.items.push(item);
-  });
+  const groupById = new Map(groups.map(group => [group.id, group]));
+  items.forEach(item => groupById.get(categoryFor(item))?.items.push(item));
 
   const appsp = items.find(item => item.id === 'connexion-appsp' || normalize(item.title).includes('appsp'));
   if (appsp) {
@@ -130,17 +152,27 @@
     if (first) first.innerHTML = 'Connectez-vous à <strong>AppSP</strong> avec votre compte institutionnel Google ou Microsoft.';
   }
 
-  const preferredQuickIds = ['sortie','presences','avis','reservation','chromebook','courriels','planclasse','pi'];
+  const preferredQuickIds = ['sortie','presences','avis','reservation','chromebook','courriels','planclasse'];
   const quickItems = preferredQuickIds.map(id => items.find(item => item.id === id)).filter(Boolean);
+  const launchItem = {
+    id:'page-lancement-cardinal-roy',
+    title:'Page de lancement Cardinal-Roy',
+    subtitle:'Accéder rapidement aux outils de l’école',
+    originalIcon:'🚀',
+    logoSrc: appsp?.logoSrc || '',
+    logoAlt: appsp?.logoAlt || 'AppSP',
+    externalUrl:'https://appsp.ca/lancement/cardinal-roy/'
+  };
+  quickItems.push(launchItem);
   items.forEach(item => {
-    if (quickItems.length < 8 && !quickItems.includes(item)) quickItems.push(item);
+    if (quickItems.length < 8 && !quickItems.includes(item) && item.id !== 'pi') quickItems.push(item);
   });
 
   const realApps = [];
   const seenLogos = new Set();
   [...items]
     .sort((a,b) => {
-      const score = item => /appsp|mosaik|mozaik|mes suivis|portail/i.test(`${item.title} ${item.logoAlt}`) ? 0 : 1;
+      const score = item => /appsp|mozaik|mes suivis|portail/i.test(`${item.title} ${item.logoAlt}`) ? 0 : 1;
       return score(a) - score(b);
     })
     .forEach(item => {
@@ -168,7 +200,7 @@
           <div class="official-logo" role="img" aria-label="Logo de l’École secondaire Cardinal-Roy"></div>
         </div>
         <div class="masthead-copy">
-          <h1>Guide du personnel</h1>
+          <h1>Guide pour les nouveaux membres du personnel</h1>
           <p>Cardinal-Roy · procédures et ressources du quotidien</p>
         </div>
       </div>
@@ -181,7 +213,7 @@
           </div>
           <div class="search-shell">
             <span class="search-glass" aria-hidden="true">🔎</span>
-            <input id="guide-search" name="guide-search" type="search" autocomplete="off" aria-autocomplete="list" aria-controls="search-suggestions" aria-expanded="false" placeholder="Ex. absence prolongée, Mosaïk, Chromebook, sortie de classe…">
+            <input id="guide-search" name="guide-search" type="search" autocomplete="off" aria-autocomplete="list" aria-controls="search-suggestions" aria-expanded="false" placeholder="Ex. absence prolongée, Mozaïk, Chromebook, sortie de classe…">
             <span class="search-key" aria-hidden="true">Ctrl K</span>
             <div id="search-suggestions" class="search-suggestions" role="listbox" hidden></div>
           </div>
@@ -199,7 +231,7 @@
 
     <nav class="section-nav" aria-label="Sections du guide">
       <div class="page section-nav-inner">
-        ${groups.map(group => `<a href="#section-${group.id}"><span aria-hidden="true">${group.icon}</span>${group.label}</a>`).join('')}
+        ${groups.filter(group => group.items.length).map(group => `<a href="#section-${group.id}"><span aria-hidden="true">${group.icon}</span>${group.label}</a>`).join('')}
       </div>
     </nav>
 
@@ -217,7 +249,10 @@
             <div><h2 id="quick-title">Accès rapide</h2><p>Les tâches les plus fréquentes, sans passer par toute la liste.</p></div>
           </div>
           <div class="quick-links">
-            ${quickItems.map(item => `<a href="#${item.id}">${visualFor(item,'quick-visual')}<span class="quick-label">${escapeHtml(item.title)}</span><span aria-hidden="true">→</span></a>`).join('')}
+            ${quickItems.map(item => item.externalUrl
+              ? `<a href="${escapeHtml(item.externalUrl)}" target="_blank" rel="noopener noreferrer">${visualFor(item,'quick-visual')}<span class="quick-label">${escapeHtml(item.title)}</span><span aria-hidden="true">↗</span></a>`
+              : `<a href="#${item.id}">${visualFor(item,'quick-visual')}<span class="quick-label">${escapeHtml(item.title)}</span><span aria-hidden="true">→</span></a>`
+            ).join('')}
           </div>
         </div>
         <aside class="shortcut-note" aria-labelledby="shortcut-title">
