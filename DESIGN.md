@@ -1,71 +1,62 @@
 # Direction visuelle — Guide du personnel Cardinal-Roy
 
-## Mode
+## Intention
 
-**Read** : le site est un guide de référence interne. La priorité est de trouver une procédure rapidement, puis de la lire sans distraction.
+Le site est un guide interne pratique et accueillant. Il doit être rapide à consulter par un nouveau membre du personnel, sans ressembler à une landing page SaaS ni à une interface générique générée par IA.
 
-## Monde visuel
+## Identité Cardinal-Roy
 
-Le site doit rappeler un **manuel de référence scolaire bien édité**, pas une landing page, un tableau de bord SaaS ou une collection de cartes générées automatiquement.
+- conserver le logo officiel de l’école;
+- conserver une palette clairement Cardinal-Roy : bourgogne profond, rouge Cardinal-Roy, blanc cassé et neutres chauds;
+- le bourgogne peut être utilisé comme grande surface lorsqu’il sert une fonction importante, notamment la recherche;
+- éviter les dégradés décoratifs, le glassmorphism et les effets « tech » gratuits.
 
-- fond papier chaud, surfaces presque blanches;
-- bourgogne Cardinal-Roy utilisé avec parcimonie pour les liens, états actifs et détails institutionnels;
-- Source Serif 4 pour les titres, Source Sans 3 pour le texte et l'interface;
-- séparateurs fins, presque aucune ombre;
-- pas de dégradé décoratif, glassmorphism, gros badges, pilules ou cartes répétitives;
-- pas d'emoji comme système d'icônes;
-- pas de kicker/eyebrow au-dessus des titres;
-- pas de mots-clés internes visibles;
-- les messages d'aide utilisent un ton calme : « Conseil », « Bon à savoir », jamais une accumulation d'avertissements rouges.
+## Icônes et applications
 
-## Architecture de l'information
+- conserver les **vraies icônes/logos des applications** lorsqu’elles existent dans le contenu source;
+- AppSP / Mes suivis et Mosaïk Portail doivent être reconnaissables grâce à leur visuel original, pas remplacés par un pictogramme générique;
+- les emojis sont permis pour les tâches générales (sortie de classe, calendrier, courriel, Chromebook, etc.) afin de rendre le guide plus jovial et plus facile à parcourir;
+- ne pas remplacer un vrai logo d’application par un emoji si le logo est disponible.
 
-La page suit le modèle mental d'un nouveau membre du personnel :
+## Recherche
 
-1. **Je veux…** — accès direct par tâche;
-2. **Recherche** — support pour un mot, une application ou une formulation imprécise;
-3. **Sommaire** — 5 à 15 grandes catégories maximum, libellées dans le vocabulaire des utilisateurs;
-4. **Procédures** — contenu détaillé à l'intérieur de chaque catégorie.
+La recherche est le principal point d’entrée du guide.
 
-La recherche complète la structure; elle ne la remplace pas.
+- elle est centrée et très visible près du haut de la page;
+- elle doit suggérer automatiquement des procédures pendant la frappe;
+- les suggestions affichent le vrai logo de l’application lorsqu’il est disponible;
+- `Ctrl + K` place le curseur dans la recherche;
+- la recherche complète la navigation par catégories, elle ne la remplace pas.
 
-## Composition
+## Favoris
 
-### En-tête
+Chaque procédure possède un bouton étoile pour l’ajouter ou la retirer des favoris. Les favoris sont conservés localement sur l’appareil et regroupés dans une section « Mes favoris » afin que les procédures utilisées souvent soient accessibles rapidement.
 
-Petit masthead institutionnel : logo, « Guide du personnel », une phrase descriptive et trois liens utilitaires discrets. Aucun hero surdimensionné.
+## Architecture
 
-### Accès rapides
+Navigation principale :
 
-Liste textuelle en colonnes. Pas de cartes égales « icône + titre + description ».
+1. Commencer
+2. Gérer la classe
+3. Suivre un élève
+4. Organiser
+5. Outils et ressources
 
-### Lecture
+Puis : favoris, accès rapides, raccourcis utiles et répertoire complet des procédures.
 
-Desktop : sommaire sticky à gauche et colonne de lecture de 65–75 caractères à droite. Mobile : sommaire compact au-dessus du contenu.
+## Style des procédures
 
-Les procédures sont séparées par des lignes fines. Les étapes utilisent une numérotation imprimée simple (`1.`, `2.`, `3.`), jamais des pastilles rouges.
+- une procédure se lit comme une ligne de manuel repliable, pas comme une grosse carte marketing;
+- le visuel de l’application ou un emoji utile précède le titre;
+- les étapes utilisent une numérotation simple;
+- les badges de pression (« À connaître », « Important », etc.) et les mots-clés internes demeurent invisibles;
+- les callouts restent calmes : « Bon à savoir », « Note », exemples et conseils.
 
-### Notes
-
-Les callouts sont des notes neutres avec une bordure de 1 px. Le raccourci Windows + V est présenté comme une note de travail avec de vrais éléments `<kbd>`.
-
-## Accessibilité et finition
+## Accessibilité et responsive
 
 - contraste du texte courant ≥ 4.5:1;
-- focus visible avec `:focus-visible`;
-- cibles tactiles d'au moins 44 px lorsque pertinent;
+- focus visible;
+- cibles tactiles suffisamment grandes;
+- aucune coupure de mot ou débordement horizontal sur mobile;
 - `prefers-reduced-motion` respecté;
-- lien d'évitement vers le contenu principal;
-- titres équilibrés avec `text-wrap: balance` et texte courant avec `text-wrap: pretty`;
-- thème appliqué aussi à la sélection, au caret, au scrollbar et aux états hover/focus;
-- aucun défilement horizontal sur petit écran.
-
-## Anti-patterns à éviter lors des prochaines modifications
-
-- ajouter une nouvelle carte pour chaque information;
-- utiliser des emojis comme décoration ou navigation;
-- créer un nouveau badge « Important », « À connaître », « Essentiel »;
-- multiplier les couleurs pour distinguer des contenus semblables;
-- ajouter des ombres ou arrondis pour « moderniser »;
-- transformer la page en dashboard;
-- exposer les synonymes ou mots-clés utilisés par le moteur de recherche.
+- la recherche et les suggestions restent utilisables au clavier.
