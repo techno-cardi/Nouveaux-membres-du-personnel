@@ -22,6 +22,11 @@ Promise.all(files.map(f=>fetch(f).then(r=>{if(!r.ok) throw new Error(f); return 
     document.getElementById('app').outerHTML=decodeUtf8Base64(parts.join(''));
     const s=document.createElement('script');
     s.src='script.js';
+    s.onload=()=>{
+      const polish=document.createElement('script');
+      polish.src='ui-polish.js';
+      document.body.appendChild(polish);
+    };
     document.body.appendChild(s);
   })
   .catch(()=>{
