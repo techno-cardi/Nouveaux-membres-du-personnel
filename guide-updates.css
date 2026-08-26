@@ -172,6 +172,15 @@
 .chrome-howto h4{margin:1px 0 5px;font-size:1rem}
 .chrome-howto p{margin:5px 0!important}
 
+/* Les titres de grandes sections restent à leur place : ils ne suivent plus le défilement. */
+.category-heading{
+  position:static!important;
+  top:auto!important;
+}
+
+.presence-howto{margin-top:14px}
+.presence-howto>.callout{margin-top:10px}
+
 @media(max-width:720px){
   .search-stage{padding:28px 0 26px}
   .search-shell{grid-template-columns:30px minmax(0,1fr);border-radius:8px}
