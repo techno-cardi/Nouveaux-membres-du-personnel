@@ -34,6 +34,7 @@ Promise.all(files.map(f=>fetch(f).then(r=>{if(!r.ok) throw new Error(f); return 
   .then(async parts=>{
     document.getElementById('legacy-source').innerHTML=decodeUtf8Base64(parts.join(''));
     await loadScript('source-patches.js');
+    await loadScript('source-patches-2.js');
     await loadScript('ui-polish.js');
     await loadScript('after-ui.js');
   })
