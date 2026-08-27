@@ -284,26 +284,21 @@
       section.id = 'section-applications-formulaires';
       section.dataset.category = 'applications-formulaires';
       section.innerHTML = `<header class="category-heading"><h2><span aria-hidden="true">🗂️</span>Applications et formulaires</h2><p>Applications du CSSC, formulaires administratifs et documents de référence utiles au personnel.</p></header><div class="procedure-list"></div>`;
-      const informatique = host.querySelector('#section-informatique');
-      const outils = host.querySelector('#section-outils');
-      if (informatique) informatique.insertAdjacentElement('beforebegin', section);
-      else if (outils) outils.insertAdjacentElement('beforebegin', section);
-      else host.appendChild(section);
     }
 
+    host.appendChild(section);
     const list = section.querySelector('.procedure-list');
     if (procedure.parentElement !== list) list.appendChild(procedure);
 
     const nav = document.querySelector('.section-nav-inner');
-    if (nav && !nav.querySelector('a[href="#section-applications-formulaires"]')) {
-      const link = document.createElement('a');
-      link.href = '#section-applications-formulaires';
-      link.innerHTML = '<span aria-hidden="true">🗂️</span>Applications et formulaires';
-      const informatiqueLink = nav.querySelector('a[href="#section-informatique"]');
-      const outilsLink = nav.querySelector('a[href="#section-outils"]');
-      if (informatiqueLink) informatiqueLink.insertAdjacentElement('beforebegin', link);
-      else if (outilsLink) outilsLink.insertAdjacentElement('beforebegin', link);
-      else nav.appendChild(link);
+    if (nav) {
+      let link = nav.querySelector('a[href="#section-applications-formulaires"]');
+      if (!link) {
+        link = document.createElement('a');
+        link.href = '#section-applications-formulaires';
+        link.innerHTML = '<span aria-hidden="true">🗂️</span>Applications et formulaires';
+      }
+      nav.appendChild(link);
     }
     return true;
   };
