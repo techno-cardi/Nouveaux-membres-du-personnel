@@ -97,7 +97,6 @@
     else root.appendChild(card);
   }
 
-  // Une fois l'interface reconstruite par ui-polish.js, déplace la fiche dans sa propre catégorie.
   const placeRenderedCategory = () => {
     const procedure = document.getElementById('encadrement-sae');
     const host = document.getElementById('category-sections');
@@ -133,9 +132,35 @@
     return true;
   };
 
-  if (!placeRenderedCategory()) {
+  const patchQuickAccess = () => {
+    const quick = document.querySelector('.quick-links');
+    if (!quick) return false;
+
+    quick.querySelector('a[href="#chromebook"]')?.remove();
+
+    const reservation = quick.querySelector('a[href="#reservation"]');
+    const reservationLabel = reservation?.querySelector('.quick-label');
+    if (reservationLabel) {
+      reservationLabel.textContent = 'Réservation - Chromebook, convocations, reprises d’examen et ressources';
+    }
+
+    if (!quick.querySelector('a[href="#encadrement-sae"]')) {
+      const link = document.createElement('a');
+      link.href = '#encadrement-sae';
+      link.innerHTML = `<span class="quick-visual real-logo"><img src="${SAE_ICON_URL}" alt="Système d’encadrement SAÉ"></span><span class="quick-label">Système d’encadrement SAÉ</span><span aria-hidden="true">→</span>`;
+      if (reservation) reservation.insertAdjacentElement('afterend', link);
+      else quick.appendChild(link);
+    }
+    return true;
+  };
+
+  const finishRenderedPatches = () => placeRenderedCategory() && patchQuickAccess();
+
+  if (!finishRenderedPatches()) {
     const observer = new MutationObserver(() => {
-      if (placeRenderedCategory()) observer.disconnect();
+      const categoryReady = placeRenderedCategory();
+      const quickReady = patchQuickAccess();
+      if (categoryReady && quickReady) observer.disconnect();
     });
     observer.observe(document.getElementById('app') || document.body, {childList:true, subtree:true});
     setTimeout(() => observer.disconnect(), 10000);
