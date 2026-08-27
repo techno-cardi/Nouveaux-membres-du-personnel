@@ -41,7 +41,6 @@
     link.classList.add('btn','primary');
     link.textContent = label;
 
-    // Retire uniquement les doublons de connexion vers une autre page de la même application.
     [...body.querySelectorAll('a')].forEach(other => {
       if (other === link) return;
       const text = normalize(other.textContent);
@@ -54,7 +53,6 @@
     return link;
   };
 
-  // Système d'encadrement : corrige le document partout où il est déjà référencé.
   root.querySelectorAll('a').forEach(a => {
     const text = normalize(a.textContent);
     if (text.includes('systeme d encadrement')) {
@@ -64,32 +62,26 @@
     }
   });
 
-  // Mes suivis : sortie de classe, tour de table, PI et notes évolutives.
   findProcedures(/sortie de classe|expulsion|tour de table|plan d intervention|note evolutive/).forEach(node => {
     upsertAppLink(node, 'https://appsp.ca/messuivis/', 'Connexion Mes suivis');
   });
 
-  // Présences : Mozaïk Portail.
   findProcedures(/prendre les presences|prise de presence|presences/).forEach(node => {
     upsertAppLink(node, 'https://mozaikportail.ca/', 'Connexion à Mozaïk Portail', /mozaik|portail|connexion/i);
   });
 
-  // Réservation, convocations et récupérations utilisent la même application.
   findProcedures(/reservation|convocation|recuperation|reprise d examen/).forEach(node => {
     upsertAppLink(node, 'https://appsp.ca/reservation/', 'Connexion à Réservation');
   });
 
-  // Plan de classe.
   findProcedures(/plan de classe/).forEach(node => {
     upsertAppLink(node, 'https://appsp.ca/plandeclasse/', 'Connexion à Plan de classe');
   });
 
-  // Mes courriels.
   findProcedures(/mes courriels/).forEach(node => {
     upsertAppLink(node, 'https://appsp.ca/mescourriels/', 'Connexion à Mes courriels');
   });
 
-  // Drive commun : bon lien + logo Drive courant (2026).
   findProcedures(/drive commun|google drive/).forEach(node => {
     const body = bodyOf(node);
     const img = node.querySelector('.card-head img, .app-logo');
@@ -109,7 +101,6 @@
     link.textContent = 'Ouvrir le Drive commun';
   });
 
-  // Chrome : le navigateur recommandé + favoris + page de lancement Cardinal-Roy.
   findProcedures(/chrome.*lancement|chrome.*favori|page de lancement.*chrome/).forEach(node => {
     const body = bodyOf(node);
 
@@ -156,7 +147,6 @@
     }
   });
 
-  // Mon horaire : nouvelle fiche, avec le vrai logo AppSP.
   if (!root.querySelector('#monhoraire')) {
     const section = document.createElement('section');
     section.className = 'card searchable';
@@ -178,5 +168,17 @@
         <div class="links"><a class="btn primary" href="https://appsp.ca/monhoraire/" target="_blank" rel="noopener noreferrer">Connexion à Mon horaire</a></div>
       </div>`;
     root.appendChild(section);
+  }
+
+  // Charge la mise à jour SAÉ de façon synchrone afin qu'elle soit appliquée avant la reconstruction de l'interface.
+  try {
+    const request = new XMLHttpRequest();
+    request.open('GET', 'source-patches-3.js', false);
+    request.send(null);
+    if ((request.status >= 200 && request.status < 300) || request.status === 0) {
+      (0, eval)(`${request.responseText}\n//# sourceURL=source-patches-3.js`);
+    }
+  } catch (error) {
+    console.error('Impossible de charger source-patches-3.js', error);
   }
 })();
