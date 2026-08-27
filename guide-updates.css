@@ -299,6 +299,29 @@
 }
 .chrome-dialog-actions .btn{cursor:pointer}
 
+/* Titre officiel du portail. */
+.masthead-copy h1{
+  font-size:0!important;
+}
+.masthead-copy h1::after{
+  content:"Portail Cardinal-Roy";
+  display:block;
+  font-size:clamp(1.6rem,2.7vw,2.35rem);
+  line-height:1.12;
+}
+
+/* Applications et formulaires doit toujours être la dernière catégorie. */
+#category-sections{
+  display:flex;
+  flex-direction:column;
+}
+#section-applications-formulaires{
+  order:999;
+}
+.section-nav-inner a[href="#section-applications-formulaires"]{
+  order:999;
+}
+
 @media(max-width:720px){
   .search-stage{padding:28px 0 26px}
   .search-shell{grid-template-columns:30px minmax(0,1fr);border-radius:8px}
