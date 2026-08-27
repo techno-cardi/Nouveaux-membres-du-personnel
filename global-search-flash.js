@@ -65,14 +65,6 @@
     document.head.appendChild(style);
   }
 
-  /*
-   * Répare le surlignage des suggestions.
-   * L'ancien surligneur appliquait les mots un après l'autre sur une chaîne qui
-   * contenait déjà des balises <mark>. Une recherche comme « plan de cl » pouvait
-   * donc surligner le « cl » de l'attribut class="search-hit" lui-même et afficher
-   * du HTML brisé dans le résultat. Ici, tous les mots sont surlignés en une seule
-   * passe à partir du vrai titre de la fiche.
-   */
   const searchNormalize = value => (value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -128,9 +120,7 @@
         const target = document.getElementById(subresourceId);
         const title = target?.querySelector('h4')?.textContent?.trim();
         if (title) strong.innerHTML = safeHighlight(title, tokens);
-        if (small) {
-          small.innerHTML = 'Applications CSSC<span class="suggestion-subtype">Accès direct à cette ressource</span>';
-        }
+        if (small) small.textContent = 'Applications CSSC';
         return;
       }
 
@@ -145,8 +135,6 @@
     });
   };
 
-  // Ces écouteurs sont chargés après le moteur de recherche principal : leur
-  // microtâche s'exécute donc après la génération et le surlignage des suggestions.
   input.addEventListener('input', () => queueMicrotask(repairSuggestionHighlights));
   input.addEventListener('focus', () => queueMicrotask(repairSuggestionHighlights));
   queueMicrotask(repairSuggestionHighlights);
@@ -164,7 +152,6 @@
     }, 430);
   };
 
-  // Clic sur un résultat normal du moteur de recherche.
   document.addEventListener('click', event => {
     const result = event.target.closest('#search-suggestions .suggestion[data-open-id]');
     if (!result || result.classList.contains('subresource-suggestion')) return;
@@ -172,14 +159,12 @@
     if (id) flashProcedure(id);
   }, true);
 
-  // Touche Entrée : fait aussi clignoter la première suggestion normale.
   input.addEventListener('keydown', event => {
     if (event.key !== 'Enter') return;
     const first = suggestions.querySelector('.suggestion[data-open-id]:not(.subresource-suggestion)');
     if (first?.dataset.openId) flashProcedure(first.dataset.openId);
   }, true);
 
-  // Bouton flottant pour revenir rapidement au début du portail.
   let backToTop = document.getElementById('back-to-top');
   if (!backToTop) {
     backToTop = document.createElement('button');
@@ -198,7 +183,6 @@
   window.addEventListener('scroll', updateBackToTop, {passive:true});
 
   backToTop.addEventListener('click', () => {
-    // Referme toutes les fiches qui ont été développées pendant la consultation.
     document.querySelectorAll('.procedure[open]').forEach(procedure => {
       procedure.open = false;
     });
@@ -206,7 +190,6 @@
       node.classList.remove('global-search-flash','search-focus-flash');
     });
 
-    // Réinitialise la recherche pour revenir à un portail propre.
     input.value = '';
     input.setAttribute('aria-expanded','false');
     suggestions.hidden = true;
@@ -214,7 +197,6 @@
     const status = document.getElementById('search-status');
     if (status) status.textContent = '';
 
-    // Retire l'ancre de la fiche consultée et remonte en douceur.
     history.replaceState(null, '', `${location.pathname}${location.search}`);
     window.scrollTo({top:0, behavior:'smooth'});
   });
