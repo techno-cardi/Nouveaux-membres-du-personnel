@@ -65,6 +65,92 @@
     document.head.appendChild(style);
   }
 
+  /*
+   * Répare le surlignage des suggestions.
+   * L'ancien surligneur appliquait les mots un après l'autre sur une chaîne qui
+   * contenait déjà des balises <mark>. Une recherche comme « plan de cl » pouvait
+   * donc surligner le « cl » de l'attribut class="search-hit" lui-même et afficher
+   * du HTML brisé dans le résultat. Ici, tous les mots sont surlignés en une seule
+   * passe à partir du vrai titre de la fiche.
+   */
+  const searchNormalize = value => (value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[’']/g, ' ')
+    .replace(/[^a-z0-9+ -]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const escapeHtml = value => String(value || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+
+  const accentPattern = token => {
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const map = {
+      a:'[aàâäáãå]', c:'[cç]', e:'[eéèêë]', i:'[iîïíì]',
+      o:'[oôöóòõ]', u:'[uùûüú]', y:'[yÿý]', n:'[nñ]'
+    };
+    return [...escaped].map(char => map[char.toLowerCase()] || char).join('');
+  };
+
+  const safeHighlight = (text, tokens) => {
+    const escapedText = escapeHtml(text);
+    const uniqueTokens = [...new Set(tokens.filter(token => token.length >= 2))]
+      .sort((a,b) => b.length - a.length);
+    if (!uniqueTokens.length) return escapedText;
+
+    try {
+      const alternatives = uniqueTokens.map(accentPattern).join('|');
+      return escapedText.replace(
+        new RegExp(`(${alternatives})`, 'gi'),
+        '<mark class="search-hit">$1</mark>'
+      );
+    } catch {
+      return escapedText;
+    }
+  };
+
+  const repairSuggestionHighlights = () => {
+    const tokens = searchNormalize(input.value).split(/\s+/).filter(Boolean);
+    if (!tokens.length) return;
+
+    suggestions.querySelectorAll('.suggestion').forEach(button => {
+      const strong = button.querySelector('.suggestion-copy strong');
+      const small = button.querySelector('.suggestion-copy small');
+      if (!strong) return;
+
+      const subresourceId = button.dataset.subresourceId;
+      if (subresourceId) {
+        const target = document.getElementById(subresourceId);
+        const title = target?.querySelector('h4')?.textContent?.trim();
+        if (title) strong.innerHTML = safeHighlight(title, tokens);
+        if (small) {
+          small.innerHTML = 'Applications CSSC<span class="suggestion-subtype">Accès direct à cette ressource</span>';
+        }
+        return;
+      }
+
+      const procedureId = button.dataset.openId;
+      if (!procedureId) return;
+      const target = document.getElementById(procedureId);
+      const title = target?.querySelector('.procedure-title')?.textContent?.trim();
+      const subtitle = target?.querySelector('.procedure-subtitle')?.textContent?.trim();
+
+      if (title) strong.innerHTML = safeHighlight(title, tokens);
+      if (small && subtitle) small.innerHTML = safeHighlight(subtitle, tokens);
+    });
+  };
+
+  // Ces écouteurs sont chargés après le moteur de recherche principal : leur
+  // microtâche s'exécute donc après la génération et le surlignage des suggestions.
+  input.addEventListener('input', () => queueMicrotask(repairSuggestionHighlights));
+  input.addEventListener('focus', () => queueMicrotask(repairSuggestionHighlights));
+  queueMicrotask(repairSuggestionHighlights);
+
   const flashProcedure = id => {
     const target = document.getElementById(id);
     if (!target?.classList.contains('procedure')) return;
