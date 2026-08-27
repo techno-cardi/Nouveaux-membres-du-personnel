@@ -166,3 +166,153 @@
     setTimeout(() => observer.disconnect(), 10000);
   }
 })();
+
+(() => {
+  const root = document.getElementById('legacy-source');
+  if (!root) return;
+
+  const DOC_MFA = 'https://drive.google.com/file/d/1TETFuJJSslnIPYla52LmS_KQAxtkqg9T/view?usp=drivesdk';
+  const DOC_CAL = 'https://drive.google.com/file/d/1Kt2QTRbW8qRc9zgJ6rej32Dq9iAygid0/view?usp=drivesdk';
+  const TELUS_HEALTH_LOGO = 'https://ised-isde.canada.ca/opic/recherche-marques/media/1617737.png';
+
+  if (!document.getElementById('applications-formulaires-style')) {
+    const style = document.createElement('style');
+    style.id = 'applications-formulaires-style';
+    style.textContent = `
+      #applications-cssc .resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+      #applications-cssc .resource-box{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid #e1d8da;border-radius:14px;background:#fff;box-shadow:0 5px 15px rgba(53,31,36,.06)}
+      #applications-cssc .resource-box:hover{border-color:#c7a9b0;box-shadow:0 8px 20px rgba(53,31,36,.09)}
+      #applications-cssc .resource-logo{width:54px;height:54px;flex:0 0 54px;border-radius:12px;background:#f7f3f4;border:1px solid #eadfe2;display:grid;place-items:center;overflow:hidden;font-size:29px}
+      #applications-cssc .resource-logo img{width:100%;height:100%;object-fit:contain;padding:6px;box-sizing:border-box;background:#fff}
+      #applications-cssc .resource-logo.wide img{padding:4px;object-fit:contain}
+      #applications-cssc .resource-copy{min-width:0;flex:1}
+      #applications-cssc .resource-copy h4{margin:0 0 5px;font-size:1rem;line-height:1.25;color:#3e171f}
+      #applications-cssc .resource-copy p{margin:0 0 10px;color:#5f5558;font-size:.9rem;line-height:1.45}
+      #applications-cssc .resource-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+      #applications-cssc .resource-actions a{font-size:.84rem}
+      #applications-cssc .resource-note{margin-top:9px;padding:9px 11px;border-left:3px solid #8da53b;background:#f5f8eb;border-radius:7px;font-size:.82rem;line-height:1.4;color:#4c513d}
+      #applications-cssc .resource-note strong{color:#344217}
+      @media(max-width:820px){#applications-cssc .resource-grid{grid-template-columns:1fr}}
+      @media(max-width:520px){#applications-cssc .resource-box{padding:13px}#applications-cssc .resource-logo{width:46px;height:46px;flex-basis:46px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  if (!root.querySelector('#applications-cssc')) {
+    const card = document.createElement('section');
+    card.className = 'card searchable';
+    card.id = 'applications-cssc';
+    card.dataset.icon = '🗂️';
+    card.dataset.title = 'Applications CSSC';
+    card.dataset.keywords = [
+      'applications cssc application formulaire formulaires ressources employé personnel',
+      'mot de passe mot passe oublié oublie réinitialiser reinitialiser multifacteur mfa authentification double authentification microsoft authenticator code qr',
+      'calendrier scolaire 2026 2027 congé conge journée pédagogique journee pedagogique relâche relache évaluation evaluation fin étape etape bulletin rencontre parents',
+      'événement accidentel evenement accidentel situation risque accident travail blessure santé sécurité sante securite csst cnesst harcèlement harcelement discrimination intimidation violence déclaration declaration jotform',
+      'offre service services éducatifs educatifs accompagnement formation',
+      'programme aide employés employes famille pae telus health lifeworks soutien',
+      'relevé paie releve paie paye salaire bulletin paie performa',
+      'repro reprographie photocopie photocopies impression demande reprographie repro+',
+      'scolago absence absences suppléance suppleance remplacement remplaçant remplacant disponibilité disponibilite déclarer absence demander suppléance attribuer suppléance'
+    ].join(' ');
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="card-icon" aria-hidden="true">🗂️</div>
+        <div>
+          <h3>Applications CSSC</h3>
+          <div class="card-sub">Applications, formulaires et ressources administratives du Centre de services scolaire</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Les ressources ci-dessous sont classées <strong>par ordre alphabétique</strong> pour les retrouver rapidement.</p>
+        <div class="resource-grid">
+          <article class="resource-box">
+            <div class="resource-logo"><img src="https://mdp.cssc.gouv.qc.ca/ico/apple-touch-icon.png" alt="Logo Application Mot de passe"></div>
+            <div class="resource-copy">
+              <h4>Application Mot de passe</h4>
+              <p>Mot de passe oublié, changement de mot de passe ou réinitialisation de l’authentification multifacteur.</p>
+              <div class="resource-actions"><a class="btn primary" href="https://mdp.cssc.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Ouvrir l’application</a><a class="btn" href="${DOC_MFA}" target="_blank" rel="noopener noreferrer">Procédurier double authentification</a></div>
+              <div class="resource-note"><strong>Double authentification :</strong> le procédurier explique l’installation de Microsoft Authenticator, la configuration sur <code>aka.ms/mfasetup</code>, le balayage du code QR et l’approbation de la demande de connexion.</div>
+            </div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo" aria-hidden="true">📅</div>
+            <div class="resource-copy"><h4>Calendrier scolaire 2026-2027</h4><p>Calendrier de Cardinal-Roy avec les congés, journées pédagogiques, semaine de relâche, périodes d’évaluation et fins d’étapes.</p><div class="resource-actions"><a class="btn primary" href="${DOC_CAL}" target="_blank" rel="noopener noreferrer">Ouvrir le calendrier</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo" aria-hidden="true">⚠️</div>
+            <div class="resource-copy"><h4>Formulaire de déclaration des événements accidentels ou des situations jugées à risque</h4><p>Pour déclarer notamment un accident du travail, une blessure ou une situation de harcèlement, discrimination, intimidation, violence ou autre enjeu de santé et sécurité.</p><div class="resource-actions"><a class="btn primary" href="https://jotform.cssc.gouv.qc.ca/240294011577857" target="_blank" rel="noopener noreferrer">Ouvrir le formulaire</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo"><img src="https://cdn.jsdelivr.net/npm/fluentui-emoji@0.0.9/icons/modern/red-apple.svg" alt="Pomme rouge"></div>
+            <div class="resource-copy"><h4>Offre de service des Services éducatifs</h4><p>Consulter l’offre de service des Services éducatifs.</p><div class="resource-actions"><a class="btn primary" href="https://seoffres.glide.page/" target="_blank" rel="noopener noreferrer">Ouvrir l’offre de service</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo"><img src="${TELUS_HEALTH_LOGO}" alt="Logo TELUS Health"></div>
+            <div class="resource-copy"><h4>Programme d’aide aux employés et à la famille (PAE)</h4><p>Accéder au programme d’aide aux employés et à la famille offert par TELUS Health.</p><div class="resource-actions"><a class="btn primary" href="https://centredeservicescolairedelacapitale.lifeworks.com/" target="_blank" rel="noopener noreferrer">Ouvrir le PAE</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo" aria-hidden="true">💵</div>
+            <div class="resource-copy"><h4>Relevé de paie</h4><p>Accéder au service de relevé de paie du CSSC.</p><div class="resource-actions"><a class="btn primary" href="http://performa.cssc.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Ouvrir le relevé de paie</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo wide"><img src="https://repro.cssc.gouv.qc.ca/images/header.jpg" alt="Logo Repro+"></div>
+            <div class="resource-copy"><h4>Repro+</h4><p>Faire une demande de reprographie, notamment pour des photocopies.</p><div class="resource-actions"><a class="btn primary" href="https://repro.cssc.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Ouvrir Repro+</a></div></div>
+          </article>
+          <article class="resource-box">
+            <div class="resource-logo"><img src="https://cssdn.gouv.qc.ca/wp-content/uploads/2025/04/72f9e1d4-a691-41c7-ab09-04f6ea4b4f82.gif" alt="Logo Scolago"></div>
+            <div class="resource-copy"><h4>Scolago</h4><p>Déclarer une absence, demander une suppléance, recevoir des suppléances ou indiquer vos disponibilités pour en effectuer.</p><div class="resource-actions"><a class="btn primary" href="https://scolago.com/fr-CA" target="_blank" rel="noopener noreferrer">Ouvrir Scolago</a></div></div>
+          </article>
+        </div>
+      </div>`;
+
+    const existing = root.querySelector('#raccourcis-poste') || root.querySelector('#c2atom') || root.lastElementChild;
+    if (existing) existing.insertAdjacentElement('afterend', card);
+    else root.appendChild(card);
+  }
+
+  const placeCategory = () => {
+    const host = document.getElementById('category-sections');
+    const procedure = document.getElementById('applications-cssc');
+    if (!host || !procedure) return false;
+
+    let section = document.getElementById('section-applications-formulaires');
+    if (!section) {
+      section = document.createElement('section');
+      section.className = 'category-section';
+      section.id = 'section-applications-formulaires';
+      section.dataset.category = 'applications-formulaires';
+      section.innerHTML = `<header class="category-heading"><h2><span aria-hidden="true">🗂️</span>Applications et formulaires</h2><p>Applications du CSSC, formulaires administratifs et documents de référence utiles au personnel.</p></header><div class="procedure-list"></div>`;
+      const informatique = host.querySelector('#section-informatique');
+      const outils = host.querySelector('#section-outils');
+      if (informatique) informatique.insertAdjacentElement('beforebegin', section);
+      else if (outils) outils.insertAdjacentElement('beforebegin', section);
+      else host.appendChild(section);
+    }
+
+    const list = section.querySelector('.procedure-list');
+    if (procedure.parentElement !== list) list.appendChild(procedure);
+
+    const nav = document.querySelector('.section-nav-inner');
+    if (nav && !nav.querySelector('a[href="#section-applications-formulaires"]')) {
+      const link = document.createElement('a');
+      link.href = '#section-applications-formulaires';
+      link.innerHTML = '<span aria-hidden="true">🗂️</span>Applications et formulaires';
+      const informatiqueLink = nav.querySelector('a[href="#section-informatique"]');
+      const outilsLink = nav.querySelector('a[href="#section-outils"]');
+      if (informatiqueLink) informatiqueLink.insertAdjacentElement('beforebegin', link);
+      else if (outilsLink) outilsLink.insertAdjacentElement('beforebegin', link);
+      else nav.appendChild(link);
+    }
+    return true;
+  };
+
+  if (!placeCategory()) {
+    const observer = new MutationObserver(() => {
+      if (placeCategory()) observer.disconnect();
+    });
+    observer.observe(document.getElementById('app') || document.body, {childList:true, subtree:true});
+    setTimeout(() => observer.disconnect(), 12000);
+  }
+})();
