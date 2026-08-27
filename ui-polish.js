@@ -118,9 +118,6 @@
     { id:'outils', label:'Outils et ressources', icon:'🧰', description:'Drive, Chrome, logiciels et ressources communes.' }
   ];
 
-  // Classement volontairement basé d'abord sur l'identifiant et le titre.
-  // On évite ainsi qu'un simple mot générique comme « AppSP » dans le contenu
-  // fasse tomber presque toutes les procédures dans « Commencer ».
   const exactCategoryById = new Map([
     ['connexion-appsp','commencer'], ['chrome','commencer'],
     ['sortie','classe'], ['presences','classe'], ['avis','classe'], ['planclasse','classe'],
@@ -200,7 +197,7 @@
           <div class="official-logo" role="img" aria-label="Logo de l’École secondaire Cardinal-Roy"></div>
         </div>
         <div class="masthead-copy">
-          <h1>Guide pour les nouveaux membres du personnel</h1>
+          <h1>Portail Cardinal-Roy</h1>
           <p>Cardinal-Roy · procédures et ressources du quotidien</p>
         </div>
       </div>
