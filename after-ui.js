@@ -6,6 +6,7 @@
   const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
   const RESERVATION_GUIDE = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
   const SEUILS_ACTIONS_URL = 'https://docs.google.com/document/d/1eLHq4MlZK6npD-T-kK3lmWR5eXrDC4oRvC_8nQyu36M/edit?usp=sharing';
+  const C2ATOM_URL = 'https://csi.cssc.gouv.qc.ca/';
 
   document.title = 'Guide pour les nouveaux membres du personnel | Cardinal-Roy';
 
@@ -95,7 +96,9 @@
     ['mozaik','https://mozaikportail.ca/'],
     ['mozaik portail','https://mozaikportail.ca/'],
     ['drive commun','https://drive.google.com/drive/folders/0ACOxqc1_36isUk9PVA'],
-    ['page de lancement cardinal-roy','https://appsp.ca/lancement/cardinal-roy/']
+    ['page de lancement cardinal-roy','https://appsp.ca/lancement/cardinal-roy/'],
+    ['billet informatique dans c2atom',C2ATOM_URL],
+    ['c2atom',C2ATOM_URL]
   ]);
 
   document.querySelectorAll('.procedure-content strong').forEach(strong => {
@@ -115,6 +118,33 @@
     strong.replaceWith(link);
     link.appendChild(strong);
   });
+
+  const c2atom = document.getElementById('c2atom');
+  if (c2atom) {
+    const body = c2atom.querySelector('.procedure-content');
+    if (body) {
+      body.querySelectorAll('strong').forEach(strong => {
+        if (strong.closest('a')) return;
+        if (!normalize(strong.textContent).includes('c2atom')) return;
+        const link = document.createElement('a');
+        link.href = C2ATOM_URL;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.className = 'inline-app-link';
+        strong.replaceWith(link);
+        link.appendChild(strong);
+      });
+
+      if (!body.querySelector('.c2atom-open-box')) {
+        const box = document.createElement('div');
+        box.className = 'callout good c2atom-open-box';
+        box.innerHTML = `<strong>Accès direct à C2Atom :</strong> <a class="btn primary" href="${C2ATOM_URL}" target="_blank" rel="noopener noreferrer">Ouvrir C2Atom</a>`;
+        const intro = body.querySelector('p');
+        if (intro) intro.insertAdjacentElement('afterend', box);
+        else body.prepend(box);
+      }
+    }
+  }
 
   const avis = document.getElementById('avis');
   if (avis) {
