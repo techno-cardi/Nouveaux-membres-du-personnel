@@ -2,7 +2,7 @@
   const root = document.getElementById('legacy-source');
   if (!root) return;
 
-  const PAPERCUT_LOGO_URL = 'https://cdn.papercut.com/web/img/products/mf/logo.svg';
+  const PAPERCUT_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6Hh2x1MfBsP45vdYHd7O98ZKj5_QOsqzzIJ52kVvye6Ppx5Zf4LwDpGN_&s=10';
   const SAE_ICON_URL = 'https://appsp.ca/admin/images/suiviscolaire.png';
 
   // Nouvelle fiche : installer une imprimante ou un photocopieur avec PaperCut.
@@ -22,7 +22,7 @@
     ].join(' ');
     card.innerHTML = `
       <div class="card-head">
-        <img class="app-logo" src="${PAPERCUT_LOGO_URL}" alt="Logo PaperCut MF">
+        <img class="app-logo" src="${PAPERCUT_LOGO_URL}" alt="Logo PaperCut">
         <div>
           <h3>Installer une imprimante ou un photocopieur avec PaperCut</h3>
           <div class="card-sub">Ajouter une imprimante de l’école à votre poste Windows</div>
