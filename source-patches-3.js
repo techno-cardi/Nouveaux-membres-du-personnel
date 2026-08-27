@@ -71,7 +71,7 @@
 
     card.innerHTML = `
       <div class="card-head">
-        <img class="app-logo" src="${SAE_ICON_URL}" alt="Icône Système d’encadrement SAÉ">
+        <img class="app-logo" src="${SAE_ICON_URL}" alt="Système d’encadrement SAÉ">
         <div>
           <h3>Système d’encadrement SAÉ</h3>
           <div class="card-sub">Cheminement du suivi organisationnel et descripteurs d’avis Mozaïk SOI</div>
