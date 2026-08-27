@@ -33,36 +33,7 @@
     });
   };
 
-  const accentPattern = token => {
-    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const map = {a:'[aàâäáãå]',c:'[cç]',e:'[eéèêë]',i:'[iîïíì]',o:'[oôöóòõ]',u:'[uùûüú]',y:'[yÿý]',n:'[nñ]'};
-    return [...escaped].map(char => map[char.toLowerCase()] || char).join('');
-  };
-
-  const highlightText = (text, tokens) => {
-    let html = escapeHtml(text);
-    tokens.forEach(token => {
-      if (token.length < 2) return;
-      try { html = html.replace(new RegExp(`(${accentPattern(token)})`, 'gi'), '<mark class="search-hit">$1</mark>'); } catch {}
-    });
-    return html;
-  };
-
-  const applyHighlights = () => {
-    correctMozaik(document.getElementById('app'));
-    const tokens = normalize(input.value).split(/\s+/).filter(Boolean);
-    if (!tokens.length) return;
-    suggestions.querySelectorAll('.suggestion-copy strong, .suggestion-copy small').forEach(el => {
-      if (!el.dataset.originalSearchText) el.dataset.originalSearchText = el.textContent || '';
-      el.dataset.originalSearchText = el.dataset.originalSearchText.replace(/Mosaïk/g, 'Mozaïk').replace(/Mosaik/g, 'Mozaïk');
-      el.innerHTML = highlightText(el.dataset.originalSearchText, tokens);
-      el.classList.add('search-highlighted');
-    });
-  };
-
   correctMozaik(document.getElementById('app'));
-  input.addEventListener('input', () => queueMicrotask(applyHighlights));
-  input.addEventListener('focus', () => queueMicrotask(applyHighlights));
 
   const mastheadText = document.querySelector('.masthead-copy p');
   if (mastheadText) mastheadText.textContent = 'Les outils, les liens et les procédures utiles à l’école.';
@@ -180,7 +151,6 @@
     dialog.querySelector('.chrome-open-procedure')?.addEventListener('click',()=>{ closeDialog(); chromeProcedure.open=true; history.replaceState(null,'',`#${chromeProcedure.id}`); requestAnimationFrame(()=>chromeProcedure.scrollIntoView({behavior:'smooth',block:'start'})); });
   }
 
-  /* Recherche détaillée à l'intérieur de la carte Applications CSSC. */
   const applications = document.getElementById('applications-cssc');
   if (!applications) return;
 
@@ -254,7 +224,6 @@
     }
     .suggestion.subresource-suggestion{background:#fffafc}
     .suggestion.subresource-suggestion:hover,.suggestion.subresource-suggestion:focus-visible{background:#f8eaee}
-    .suggestion-subtype{display:block;margin-top:2px;color:#806a70;font-size:.73rem;font-weight:600}
     .cssc-procedure-logo img{object-fit:contain!important;padding:3px!important;background:#fff}
   `;
   if (!document.getElementById(style.id)) document.head.appendChild(style);
@@ -292,7 +261,6 @@
     const matches = getSubMatches(q);
     if (!matches.length) return;
 
-    const tokens = normalize(q).split(/\s+/).filter(Boolean);
     [...suggestions.querySelectorAll('.suggestion[data-open-id="applications-cssc"]')].forEach(node => node.remove());
     suggestions.querySelectorAll('.subresource-suggestion').forEach(node => node.remove());
 
@@ -304,7 +272,7 @@
       button.setAttribute('role','option');
       button.dataset.subresourceId=resource.id;
       button.dataset.subresourceIndex=String(index);
-      button.innerHTML = `${subVisual(resource)}<span class="suggestion-copy"><strong>${highlightText(resource.title,tokens)}</strong><small>Applications CSSC<span class="suggestion-subtype">Accès direct à cette ressource</span></small></span><span class="suggestion-arrow" aria-hidden="true">→</span>`;
+      button.innerHTML = `${subVisual(resource)}<span class="suggestion-copy"><strong>${escapeHtml(resource.title)}</strong><small>Applications CSSC</small></span><span class="suggestion-arrow" aria-hidden="true">→</span>`;
       fragment.appendChild(button);
     });
     suggestions.prepend(fragment);
