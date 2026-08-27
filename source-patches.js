@@ -169,16 +169,4 @@
       </div>`;
     root.appendChild(section);
   }
-
-  // Charge la mise à jour SAÉ de façon synchrone afin qu'elle soit appliquée avant la reconstruction de l'interface.
-  try {
-    const request = new XMLHttpRequest();
-    request.open('GET', 'source-patches-3.js', false);
-    request.send(null);
-    if ((request.status >= 200 && request.status < 300) || request.status === 0) {
-      (0, eval)(`${request.responseText}\n//# sourceURL=source-patches-3.js`);
-    }
-  } catch (error) {
-    console.error('Impossible de charger source-patches-3.js', error);
-  }
 })();
