@@ -1,12 +1,8 @@
 window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, {
   "__mozaik__": "assets/mozaik.svg",
   "https://appsp.ca/admin/images/suiviscolaire.png": "assets/vendor/encadrement-sae.png",
-  "https://appsp.ca/images/mescourriels.png": "assets/vendor/mescourriels-1c09cc0790.png",
-  "https://appsp.ca/images/messuivis.png": "assets/vendor/messuivis-ff639de95a.png",
   "https://appsp.ca/images/monhoraire.png": "assets/vendor/mon-horaire.png",
-  "https://appsp.ca/images/plandeclasse.png": "assets/vendor/plandeclasse-00c1763f25.png",
   "https://appsp.ca/images/plandetravail.png": "assets/vendor/plan-de-travail.png",
-  "https://appsp.ca/images/reservation.png": "assets/vendor/reservation-f532ecba91.png",
   "https://cdn.jsdelivr.net/npm/fluentui-emoji@0.0.9/icons/modern/red-apple.svg": "assets/vendor/services-educatifs.svg",
   "https://cssc.gouv.qc.ca/wp-content/uploads/2020/06/csscapitale_diapo_couleur.png": "assets/vendor/cssc.png",
   "https://cssdn.gouv.qc.ca/wp-content/uploads/2025/04/72f9e1d4-a691-41c7-ab09-04f6ea4b4f82.gif": "assets/vendor/scolago.gif",
