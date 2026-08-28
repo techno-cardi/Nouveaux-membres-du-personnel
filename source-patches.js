@@ -86,7 +86,7 @@
     const body = bodyOf(node);
     const img = node.querySelector('.card-head img, .app-logo');
     if (img) {
-      img.src = 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Drive_icon_%282026%29.svg';
+      img.src = 'assets/vendor/google-drive.svg';
       img.alt = 'Logo Google Drive';
     }
     let link = [...body.querySelectorAll('a')].find(a => /drive|dossier|ouvrir/i.test(a.textContent));
@@ -156,7 +156,7 @@
     section.dataset.keywords = 'mon horaire horaire calendrier agenda téléphone telephone cellulaire iphone android ordinateur ical import importer cours jours cycles appsp synchronisation';
     section.innerHTML = `
       <div class="card-head">
-        <img class="app-logo" src="https://appsp.ca/images/monhoraire.png" alt="Logo Mon horaire">
+        <img class="app-logo" src="assets/vendor/mon-horaire.png" alt="Logo Mon horaire">
         <div>
           <h3>Mon horaire — importer son horaire dans son calendrier</h3>
           <div class="card-sub">Ajouter ses cours et jours cycles à son agenda numérique</div>

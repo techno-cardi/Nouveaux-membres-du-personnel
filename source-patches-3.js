@@ -4,7 +4,7 @@
 
   const CHEMINEMENT_URL = 'https://drive.google.com/file/d/12xkFLjmuC7xkwsQRiftnwmHrG0Dmqpkg/view?usp=drive_link';
   const DESCRIPTEURS_URL = 'https://drive.google.com/file/d/1k7fGrtJ6ae_8xIcKvvfyCayo2wvUJW-D/view?usp=drive_link';
-  const SAE_ICON_URL = 'https://appsp.ca/admin/images/suiviscolaire.png';
+  const SAE_ICON_URL = 'assets/vendor/encadrement-sae.png';
 
   const normalize = value => (value || '')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
@@ -173,7 +173,7 @@
 
   const DOC_MFA = 'https://drive.google.com/file/d/1TETFuJJSslnIPYla52LmS_KQAxtkqg9T/view?usp=drivesdk';
   const DOC_CAL = 'https://drive.google.com/file/d/1Kt2QTRbW8qRc9zgJ6rej32Dq9iAygid0/view?usp=drivesdk';
-  const TELUS_HEALTH_LOGO = 'https://ised-isde.canada.ca/opic/recherche-marques/media/1617737.png';
+  const TELUS_HEALTH_LOGO = 'assets/vendor/telus-health.png';
 
   if (!document.getElementById('applications-formulaires-style')) {
     const style = document.createElement('style');
@@ -228,7 +228,7 @@
         <p>Les ressources ci-dessous sont classées <strong>par ordre alphabétique</strong> pour les retrouver rapidement.</p>
         <div class="resource-grid">
           <article class="resource-box">
-            <div class="resource-logo"><img src="https://mdp.cssc.gouv.qc.ca/ico/apple-touch-icon.png" alt="Logo Application Mot de passe"></div>
+            <div class="resource-logo"><img src="assets/vendor/mot-de-passe.png" alt="Logo Application Mot de passe"></div>
             <div class="resource-copy">
               <h4>Application Mot de passe</h4>
               <p>Mot de passe oublié, changement de mot de passe ou réinitialisation de l’authentification multifacteur.</p>
@@ -245,7 +245,7 @@
             <div class="resource-copy"><h4>Formulaire de déclaration des événements accidentels ou des situations jugées à risque</h4><p>Pour déclarer notamment un accident du travail, une blessure ou une situation de harcèlement, discrimination, intimidation, violence ou autre enjeu de santé et sécurité.</p><div class="resource-actions"><a class="btn primary" href="https://jotform.cssc.gouv.qc.ca/240294011577857" target="_blank" rel="noopener noreferrer">Ouvrir le formulaire</a></div></div>
           </article>
           <article class="resource-box">
-            <div class="resource-logo"><img src="https://cdn.jsdelivr.net/npm/fluentui-emoji@0.0.9/icons/modern/red-apple.svg" alt="Pomme rouge"></div>
+            <div class="resource-logo"><img src="assets/vendor/services-educatifs.svg" alt="Pomme rouge"></div>
             <div class="resource-copy"><h4>Offre de service des Services éducatifs</h4><p>Consulter l’offre de service des Services éducatifs.</p><div class="resource-actions"><a class="btn primary" href="https://seoffres.glide.page/" target="_blank" rel="noopener noreferrer">Ouvrir l’offre de service</a></div></div>
           </article>
           <article class="resource-box">
@@ -257,11 +257,11 @@
             <div class="resource-copy"><h4>Relevé de paie</h4><p>Accéder au service de relevé de paie du CSSC.</p><div class="resource-actions"><a class="btn primary" href="http://performa.cssc.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Ouvrir le relevé de paie</a></div></div>
           </article>
           <article class="resource-box">
-            <div class="resource-logo wide"><img src="https://repro.cssc.gouv.qc.ca/images/header.jpg" alt="Logo Repro+"></div>
+            <div class="resource-logo wide"><img src="assets/vendor/repro-plus.jpg" alt="Logo Repro+"></div>
             <div class="resource-copy"><h4>Repro+</h4><p>Faire une demande de reprographie, notamment pour des photocopies.</p><div class="resource-actions"><a class="btn primary" href="https://repro.cssc.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Ouvrir Repro+</a></div></div>
           </article>
           <article class="resource-box">
-            <div class="resource-logo"><img src="https://cssdn.gouv.qc.ca/wp-content/uploads/2025/04/72f9e1d4-a691-41c7-ab09-04f6ea4b4f82.gif" alt="Logo Scolago"></div>
+            <div class="resource-logo"><img src="assets/vendor/scolago.gif" alt="Logo Scolago"></div>
             <div class="resource-copy"><h4>Scolago</h4><p>Déclarer une absence, demander une suppléance, recevoir des suppléances ou indiquer vos disponibilités pour en effectuer.</p><div class="resource-actions"><a class="btn primary" href="https://scolago.com/fr-CA" target="_blank" rel="noopener noreferrer">Ouvrir Scolago</a></div></div>
           </article>
         </div>

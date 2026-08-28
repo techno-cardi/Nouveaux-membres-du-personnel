@@ -3,8 +3,8 @@
   const suggestions = document.getElementById('search-suggestions');
   if (!input || !suggestions) return;
 
-  const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
-  const CSSC_LOGO_URL = 'https://cssc.gouv.qc.ca/wp-content/uploads/2020/06/csscapitale_diapo_couleur.png';
+  const CHROME_LOGO_URL = 'assets/vendor/chrome.svg';
+  const CSSC_LOGO_URL = 'assets/vendor/cssc.png';
   const RESERVATION_GUIDE = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
   const SEUILS_ACTIONS_URL = 'https://docs.google.com/document/d/1eLHq4MlZK6npD-T-kK3lmWR5eXrDC4oRvC_8nQyu36M/edit?usp=sharing';
   const C2ATOM_URL = 'https://csi.cssc.gouv.qc.ca/';

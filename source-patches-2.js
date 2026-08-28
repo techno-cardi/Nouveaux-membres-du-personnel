@@ -5,10 +5,10 @@
   const RESERVATION_URL = 'https://appsp.ca/reservation/';
   const RESERVATION_TUTORIAL_URL = 'https://docs.google.com/document/d/1xTT24JTumbFbWY8vWt3aRSkJS8RLZtEIMuvU9nwRpsc/edit?usp=drive_link';
   const ENCADREMENT_URL = 'https://drive.google.com/file/d/1x3FtPGjXHO98NtOc2zvgWUVCVqPhZFcP/view';
-  const CHROME_LOGO_URL = 'https://www.google.com/chrome/static/images/chrome-logo-m100.svg';
+  const CHROME_LOGO_URL = 'assets/vendor/chrome.svg';
   const PLAN_TRAVAIL_URL = 'https://appsp.ca/plandetravail/';
   const PLAN_TRAVAIL_TUTORIAL_URL = 'https://docs.google.com/document/d/11hv762jp26PKPkSwv5gA08R3eU8cQx5mB8R3kTU-QXA/edit';
-  const PLAN_TRAVAIL_LOGO_URL = 'https://appsp.ca/images/plandetravail.png';
+  const PLAN_TRAVAIL_LOGO_URL = 'assets/vendor/plan-de-travail.png';
 
   const normalize = value => (value || '')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
@@ -170,7 +170,7 @@
       }
     }
     if (img) {
-      img.src = 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Drive_icon_%282026%29.svg';
+      img.src = 'assets/vendor/google-drive.svg';
       img.alt = 'Logo Google Drive';
     }
     setPrimary(drive,'https://drive.google.com/drive/folders/0ACOxqc1_36isUk9PVA','Ouvrir le Drive commun',/drive|dossier|ouvrir/i);

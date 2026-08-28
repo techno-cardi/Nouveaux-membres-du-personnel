@@ -2,9 +2,9 @@
   const root = document.getElementById('legacy-source');
   if (!root) return;
 
-  const PAPERCUT_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6Hh2x1MfBsP45vdYHd7O98ZKj5_QOsqzzIJ52kVvye6Ppx5Zf4LwDpGN_&s=10';
-  const SAE_ICON_URL = 'https://appsp.ca/admin/images/suiviscolaire.png';
-  const C2ATOM_LOGO_URL = 'https://mkt.c2-itsm.com/hubfs/webinar%20logo.png';
+  const PAPERCUT_LOGO_URL = 'assets/vendor/papercut.png';
+  const SAE_ICON_URL = 'assets/vendor/encadrement-sae.png';
+  const C2ATOM_LOGO_URL = 'assets/vendor/c2atom.png';
   const TECH_EMAIL = 'Eric.Couture@cssc.gouv.qc.ca';
   const TECHNOPEDAGOGUES_MAILTO = 'mailto:Kevin.Tremblay@cssc.gouv.qc.ca,Andre.Croteau@cssc.gouv.qc.ca?subject=Demande%20de%20soutien%20technop%C3%A9dagogique';
 
