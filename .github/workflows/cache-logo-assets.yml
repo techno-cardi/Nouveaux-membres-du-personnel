@@ -1,0 +1,193 @@
+name: Cache logo assets
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'body-part-*.txt'
+      - 'source-patches*.js'
+      - 'ui-polish.js'
+      - 'after-ui.js'
+      - 'global-search-flash.js'
+      - '.github/workflows/cache-logo-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cache-logos:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache every remote logo locally
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from urllib.request import Request, urlopen
+          import base64, hashlib, html, json, mimetypes, re
+
+          known = {
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6Hh2x1MfBsP45vdYHd7O98ZKj5_QOsqzzIJ52kVvye6Ppx5Zf4LwDpGN_&s=10': 'papercut',
+              'https://appsp.ca/admin/images/suiviscolaire.png': 'encadrement-sae',
+              'https://mkt.c2-itsm.com/hubfs/webinar%20logo.png': 'c2atom',
+              'https://www.google.com/chrome/static/images/chrome-logo-m100.svg': 'chrome',
+              'https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Drive_icon_%282026%29.svg': 'google-drive',
+              'https://appsp.ca/images/plandetravail.png': 'plan-de-travail',
+              'https://appsp.ca/images/monhoraire.png': 'mon-horaire',
+              'https://mdp.cssc.gouv.qc.ca/ico/apple-touch-icon.png': 'mot-de-passe',
+              'https://cdn.jsdelivr.net/npm/fluentui-emoji@0.0.9/icons/modern/red-apple.svg': 'services-educatifs',
+              'https://ised-isde.canada.ca/opic/recherche-marques/media/1617737.png': 'telus-health',
+              'https://repro.cssc.gouv.qc.ca/images/header.jpg': 'repro-plus',
+              'https://cssdn.gouv.qc.ca/wp-content/uploads/2025/04/72f9e1d4-a691-41c7-ab09-04f6ea4b4f82.gif': 'scolago',
+              'https://cssc.gouv.qc.ca/wp-content/uploads/2020/06/csscapitale_diapo_couleur.png': 'cssc',
+          }
+
+          parts = sorted(Path('.').glob('body-part-*.txt'))
+          legacy = ''
+          if parts:
+              encoded = ''.join(p.read_text(encoding='utf-8') for p in parts)
+              try:
+                  legacy = base64.b64decode(re.sub(r'\s+', '', encoded)).decode('utf-8', 'replace')
+              except Exception as exc:
+                  print(f'WARNING: impossible de décoder le contenu historique: {exc}')
+
+          urls = set(known)
+          if legacy:
+              urls.update(html.unescape(url) for url in re.findall(r'<img\b[^>]*\bsrc=["\'](https?://[^"\']+)', legacy, flags=re.I))
+
+          source_paths = [
+              *Path('.').glob('source-patches*.js'),
+              Path('ui-polish.js'), Path('after-ui.js'), Path('global-search-flash.js'),
+              Path('guide-updates.css'), Path('styles.css')
+          ]
+          url_re = re.compile(r'https?://[^\s\'"`<>]+')
+          image_re = re.compile(r'\.(?:png|jpe?g|gif|svg|webp|ico)(?:[?#].*)?$', re.I)
+          for path in source_paths:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              for raw in url_re.findall(text):
+                  url = raw.rstrip('),;]}')
+                  if image_re.search(url) or 'encrypted-tbn0.gstatic.com/images?' in url:
+                      urls.add(url)
+
+          out = Path('assets/vendor')
+          out.mkdir(parents=True, exist_ok=True)
+          mapping = {}
+          content_type_ext = {
+              'image/png': '.png', 'image/jpeg': '.jpg', 'image/gif': '.gif',
+              'image/svg+xml': '.svg', 'image/webp': '.webp', 'image/x-icon': '.ico',
+              'image/vnd.microsoft.icon': '.ico'
+          }
+
+          def filename_for(url, content_type=''):
+              parsed = urlparse(url)
+              suffix = Path(parsed.path).suffix.lower()
+              if suffix not in {'.png','.jpg','.jpeg','.gif','.svg','.webp','.ico'}:
+                  suffix = content_type_ext.get(content_type.split(';')[0].lower(), '.img')
+              if suffix == '.jpeg': suffix = '.jpg'
+              stem = known.get(url)
+              if not stem:
+                  base = Path(parsed.path).stem or parsed.netloc.split('.')[0] or 'logo'
+                  base = re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')[:38] or 'logo'
+                  stem = f'{base}-{hashlib.sha256(url.encode()).hexdigest()[:10]}'
+              return stem + suffix
+
+          for url in sorted(urls):
+              try:
+                  request = Request(url, headers={
+                      'User-Agent': 'Mozilla/5.0 (compatible; Cardinal-Roy-Asset-Cache/1.0)',
+                      'Accept': 'image/avif,image/webp,image/svg+xml,image/*,*/*;q=0.8'
+                  })
+                  with urlopen(request, timeout=30) as response:
+                      data = response.read()
+                      content_type = response.headers.get('Content-Type','').split(';')[0].lower()
+                  if not data or (not content_type.startswith('image/') and not data.lstrip().startswith(b'<svg')):
+                      raise ValueError(f'contenu non image ({content_type or "type inconnu"})')
+                  name = filename_for(url, content_type)
+                  target = out / name
+                  target.write_bytes(data)
+                  mapping[url] = target.as_posix()
+                  print(f'OK {url} -> {target} ({len(data)} octets)')
+              except Exception as exc:
+                  # Si une copie locale d'un logo connu existe déjà, on la conserve.
+                  candidates = list(out.glob((known.get(url) or '___aucun___') + '.*')) if url in known else []
+                  if candidates:
+                      mapping[url] = candidates[0].as_posix()
+                      print(f'KEEP {url} -> {candidates[0]} ({exc})')
+                  else:
+                      print(f'WARNING {url}: {exc}')
+
+          # Mozaïk est fourni directement par l'école et est déjà sauvegardé dans /assets.
+          mapping['__mozaik__'] = 'assets/mozaik.svg'
+
+          Path('assets-map.js').write_text(
+              'window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, ' +
+              json.dumps(mapping, ensure_ascii=False, sort_keys=True, indent=2) +
+              ');\n', encoding='utf-8'
+          )
+          Path('assets/vendor/manifest.json').write_text(
+              json.dumps(mapping, ensure_ascii=False, sort_keys=True, indent=2) + '\n', encoding='utf-8'
+          )
+
+          # Remplace les URL d'images dans le contenu historique afin qu'aucune
+          # requête distante ne soit nécessaire au chargement des cartes.
+          if legacy:
+              localized = legacy
+              for remote, local in mapping.items():
+                  if remote.startswith('http'):
+                      localized = localized.replace(remote, local)
+              recoded = base64.b64encode(localized.encode('utf-8')).decode('ascii')
+              chunks = [recoded[i:i+8000] for i in range(0, len(recoded), 8000)]
+              for old in parts:
+                  old.unlink()
+              for index, chunk in enumerate(chunks):
+                  Path(f'body-part-{index:02d}.txt').write_text(chunk, encoding='utf-8')
+
+          # Même principe pour les fichiers sources qui contiennent des URL de logos.
+          for path in source_paths:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              updated = text
+              for remote, local in mapping.items():
+                  if remote.startswith('http'):
+                      updated = updated.replace(remote, local)
+              if path.name == 'global-search-flash.js':
+                  updated = re.sub(
+                      r"const MOZAIK_LOGO = 'data:image/png;base64,[^']+';",
+                      "const MOZAIK_LOGO = 'assets/mozaik.svg';",
+                      updated,
+                      count=1
+                  )
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+
+          # Charge le manifeste et le correctif de logos avant ui-polish.js.
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          if "loadScript('source-patches-5.js')" not in text:
+              needle = "    await loadScript('source-patches-4.js');\n"
+              replacement = needle + "    await loadScript('assets-map.js');\n    await loadScript('source-patches-5.js');\n"
+              if needle not in text:
+                  raise RuntimeError('Point d’insertion introuvable dans index.html')
+              index.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
+          PY
+
+      - name: Commit cached assets
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "Aucun changement à enregistrer."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets assets-map.js body-part-*.txt source-patches*.js ui-polish.js after-ui.js global-search-flash.js guide-updates.css styles.css index.html
+          git commit -m "Mettre les logos en cache dans les assets locaux"
+          git push
