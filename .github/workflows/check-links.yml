@@ -53,7 +53,13 @@ jobs:
 
           # Les images sont déjà protégées par le workflow de cache des assets.
           image_ext = re.compile(r'\.(?:png|jpe?g|gif|svg|webp|ico)(?:[?#].*)?$', re.I)
-          urls = [u for u in urls if not image_ext.search(u) and 'encrypted-tbn0.gstatic.com/images?' not in u]
+          ignored_origins = {'https://fonts.googleapis.com', 'https://fonts.gstatic.com'}
+          urls = [
+              u for u in urls
+              if not image_ext.search(u)
+              and 'encrypted-tbn0.gstatic.com/images?' not in u
+              and u.rstrip('/') not in {origin.rstrip('/') for origin in ignored_origins}
+          ]
 
           hard_failures = []
           warnings = []
@@ -90,14 +96,22 @@ jobs:
               elif code is not None and code >= 500:
                   warnings.append((url, f'HTTP {code}'))
                   print(f'WARNING serveur {code}: {url}')
+              elif code in (401, 403):
+                  print(f'PROTECTED {code}: {url}')
               else:
                   print(f'OK {code}: {url}' + (f' -> {final}' if final and final != url else ''))
 
-          # Vérifie aussi que tous les href/src locaux directs existent réellement.
+          # Vérifie aussi les href/src locaux réellement écrits dans le HTML.
+          # Les expressions de gabarit JS ${...} ne sont pas des chemins de fichiers.
           local_refs = set()
           for match in re.findall(r'(?:href|src)=["\']([^"\']+)["\']', joined, flags=re.I):
               value = html.unescape(match).strip()
-              if not value or value.startswith(('#','http://','https://','mailto:','tel:','data:','javascript:')):
+              if (
+                  not value
+                  or '${' in value
+                  or '}' in value
+                  or value.startswith(('#','http://','https://','mailto:','tel:','data:','javascript:'))
+              ):
                   continue
               value = value.split('?',1)[0].split('#',1)[0].lstrip('/')
               if value:
@@ -110,7 +124,7 @@ jobs:
 
           print(f'\nRésumé: {len(hard_failures)} brisé(s), {len(warnings)} avertissement(s).')
           if warnings:
-              print('Les erreurs réseau, 401/403 et erreurs serveur temporaires ne font pas échouer le contrôle.')
+              print('Les erreurs réseau et erreurs serveur temporaires ne font pas échouer le contrôle.')
           if hard_failures:
               print('::error::Un ou plusieurs liens sont réellement brisés (404/410 ou fichier local manquant).')
               sys.exit(1)
