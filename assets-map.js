@@ -1,5 +1,5 @@
 window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, {
-  "__mozaik__": "assets/mozaik.svg",
+  "__mozaik__": "assets/vendor/moz.png",
   "https://appsp.ca/admin/images/suiviscolaire.png": "assets/vendor/encadrement-sae.png",
   "https://appsp.ca/images/monhoraire.png": "assets/vendor/mon-horaire.png",
   "https://appsp.ca/images/plandetravail.png": "assets/vendor/plan-de-travail.png",
