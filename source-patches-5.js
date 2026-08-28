@@ -2,7 +2,7 @@
   const root = document.getElementById('legacy-source');
   if (!root) return;
 
-  const MOZAIK_LOGO = 'assets/mozaik.png';
+  const MOZAIK_LOGO = 'assets/vendor/moz.png';
   const assetMap = window.PORTAL_ASSETS || {};
 
   const localAssetFor = value => {
