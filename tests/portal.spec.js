@@ -58,12 +58,22 @@ test('Retour en haut ferme les fiches, vide la recherche et remet la page propre
   expect(errors).toEqual([]);
 });
 
-test('le moteur tolère une faute simple', async ({ page }) => {
+test('le moteur tolère une faute simple sur suppléance', async ({ page }) => {
   const errors = await openPortal(page);
   const input = page.locator('#guide-search');
   await input.fill('suppleence');
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText('Scolago');
+  expect(errors).toEqual([]);
+});
+
+test('le moteur comprend une recherche partielle de photocopie', async ({ page }) => {
+  const errors = await openPortal(page);
+  const input = page.locator('#guide-search');
+  await input.fill('photocopi');
+  const first = page.locator('#search-suggestions .suggestion').first();
+  await expect(first).toBeVisible();
+  await expect(first).toContainText('Repro+');
   expect(errors).toEqual([]);
 });
