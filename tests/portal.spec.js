@@ -2,9 +2,16 @@ const { test, expect } = require('@playwright/test');
 
 async function openPortal(page) {
   const pageErrors = [];
-  page.on('pageerror', error => pageErrors.push(error.message));
+  page.on('pageerror', error => {
+    pageErrors.push(error.message);
+    console.log(`PAGEERROR: ${error.message}`);
+  });
+  page.on('console', message => {
+    if (message.type() === 'error') console.log(`CONSOLE ERROR: ${message.text()}`);
+  });
   await page.goto('/');
   await expect(page.locator('#guide-search')).toBeVisible();
+  console.log(`SEARCH ENGINE: ${await page.evaluate(() => window.PORTAL_SEARCH_ENGINE || 'absent')}`);
   return pageErrors;
 }
 
@@ -14,7 +21,11 @@ async function searchAndOpen(page, query, expectedText) {
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText(expectedText);
+  console.log(`SUGGESTION: ${await first.innerText()}`);
+  console.log(`DATA: ${JSON.stringify(await first.evaluate(el => ({...el.dataset})))}`);
   await first.click();
+  console.log(`HASH AFTER CLICK: ${await page.evaluate(() => location.hash)}`);
+  console.log(`OPEN PROCEDURES: ${await page.locator('.procedure[open]').count()}`);
   await expect(page.locator('.portal-search-flash')).toBeVisible();
   return page.locator('.portal-search-flash');
 }
@@ -58,6 +69,7 @@ test('le moteur tolère une faute simple', async ({ page }) => {
   const errors = await openPortal(page);
   const input = page.locator('#guide-search');
   await input.fill('suppleence');
+  console.log(`SUGGESTIONS TYPO: ${await page.locator('#search-suggestions .suggestion').count()}`);
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText('Scolago');
