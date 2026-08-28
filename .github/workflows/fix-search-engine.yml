@@ -24,15 +24,18 @@ jobs:
 
           path = Path('global-search-flash.js')
           text = path.read_text(encoding='utf-8')
-          block = """  const escapeHtml = value => String(value || '')
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
-
-          """
-          if block not in text:
-              raise SystemExit('Déclaration en double introuvable, aucun changement appliqué.')
-          text = text.replace(block, '', 1)
-          if text.count('const escapeHtml =') != 1:
-              raise SystemExit(f'Nombre inattendu de déclarations escapeHtml après correction: {text.count("const escapeHtml =")}')
+          marker = '  const escapeHtml = value =>'
+          first = text.find(marker)
+          second = text.find(marker, first + len(marker)) if first >= 0 else -1
+          if first < 0 or second < 0:
+              raise SystemExit(f'Deuxième déclaration escapeHtml introuvable. Occurrences: {text.count(marker)}')
+          end_marker = '\n  const accentPattern = token =>'
+          end = text.find(end_marker, second)
+          if end < 0:
+              raise SystemExit('Fin de la deuxième déclaration escapeHtml introuvable.')
+          text = text[:second] + text[end + 1:]
+          if text.count(marker) != 1:
+              raise SystemExit(f'Nombre inattendu de déclarations escapeHtml après correction: {text.count(marker)}')
           path.write_text(text, encoding='utf-8')
           PY
       - name: Enregistrer la correction
