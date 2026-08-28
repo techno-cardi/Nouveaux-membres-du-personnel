@@ -68,10 +68,10 @@ test('le moteur tolère une faute simple sur suppléance', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('le moteur comprend une recherche partielle de photocopie', async ({ page }) => {
+test('le moteur comprend une recherche partielle de reprographie', async ({ page }) => {
   const errors = await openPortal(page);
   const input = page.locator('#guide-search');
-  await input.fill('photocopi');
+  await input.fill('reprographi');
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText('Repro+');
