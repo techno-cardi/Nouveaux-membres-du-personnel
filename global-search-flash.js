@@ -165,9 +165,6 @@
     return previous[b.length];
   };
 
-  const escapeHtml = value => String(value || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
   const accentPattern = token => {
     const escaped = token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     const map = {a:'[aàâäáãå]',c:'[cç]',e:'[eéèêë]',i:'[iîïíì]',o:'[oôöóòõ]',u:'[uùûüú]',y:'[yÿý]',n:'[nñ]'};
