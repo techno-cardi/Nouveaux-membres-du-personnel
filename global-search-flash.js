@@ -16,7 +16,7 @@
 
   /* Logo Mozaïk fourni pour le portail. Il est intégré directement au code afin
      de ne pas dépendre d'un hébergeur externe. */
-  const MOZAIK_LOGO = 'assets/mozaik.svg';
+  const MOZAIK_LOGO = 'assets/vendor/moz.png';
 
   const normalize = value => (value || '')
     .normalize('NFD')
