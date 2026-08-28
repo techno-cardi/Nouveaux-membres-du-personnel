@@ -27,7 +27,6 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-          from urllib.parse import urlparse
           from urllib.request import Request, urlopen
           from urllib.error import HTTPError, URLError
           import base64, html, re, socket, sys, time
@@ -54,7 +53,7 @@ jobs:
 
           # Les images sont déjà protégées par le workflow de cache des assets.
           image_ext = re.compile(r'\.(?:png|jpe?g|gif|svg|webp|ico)(?:[?#].*)?$', re.I)
-          urls = [u for u in urls if not image_ext.search(url) and 'encrypted-tbn0.gstatic.com/images?' not in u]
+          urls = [u for u in urls if not image_ext.search(u) and 'encrypted-tbn0.gstatic.com/images?' not in u]
 
           hard_failures = []
           warnings = []
