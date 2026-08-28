@@ -123,7 +123,8 @@ jobs:
                   else:
                       print(f'WARNING {url}: {exc}')
 
-          mapping['__mozaik__'] = 'assets/mozaik.svg'
+          # Le logo Mozaïk est fourni manuellement et doit toujours être conservé tel quel.
+          mapping['__mozaik__'] = 'assets/vendor/moz.png'
 
           Path('assets-map.js').write_text(
               'window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, ' +
@@ -157,10 +158,15 @@ jobs:
               if path.name == 'global-search-flash.js':
                   updated = re.sub(
                       r"const MOZAIK_LOGO = 'data:image/png;base64,[^']+';",
-                      "const MOZAIK_LOGO = 'assets/mozaik.svg';",
+                      "const MOZAIK_LOGO = 'assets/vendor/moz.png';",
                       updated,
                       count=1
                   )
+                  updated = updated.replace("const MOZAIK_LOGO = 'assets/mozaik.svg';", "const MOZAIK_LOGO = 'assets/vendor/moz.png';")
+                  updated = updated.replace("const MOZAIK_LOGO = 'assets/mozaik.png';", "const MOZAIK_LOGO = 'assets/vendor/moz.png';")
+              if path.name == 'source-patches-5.js':
+                  updated = updated.replace("const MOZAIK_LOGO = 'assets/mozaik.svg';", "const MOZAIK_LOGO = 'assets/vendor/moz.png';")
+                  updated = updated.replace("const MOZAIK_LOGO = 'assets/mozaik.png';", "const MOZAIK_LOGO = 'assets/vendor/moz.png';")
               if updated != text:
                   path.write_text(updated, encoding='utf-8')
 
