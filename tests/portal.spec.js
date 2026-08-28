@@ -2,16 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 async function openPortal(page) {
   const pageErrors = [];
-  page.on('pageerror', error => {
-    pageErrors.push(error.message);
-    console.log(`PAGEERROR: ${error.message}`);
-  });
-  page.on('console', message => {
-    if (message.type() === 'error') console.log(`CONSOLE ERROR: ${message.text()}`);
-  });
+  page.on('pageerror', error => pageErrors.push(error.message));
   await page.goto('/');
   await expect(page.locator('#guide-search')).toBeVisible();
-  console.log(`SEARCH ENGINE: ${await page.evaluate(() => window.PORTAL_SEARCH_ENGINE || 'absent')}`);
+  await expect.poll(() => page.evaluate(() => window.PORTAL_SEARCH_ENGINE || '')).toBe('2.0');
   return pageErrors;
 }
 
@@ -21,11 +15,8 @@ async function searchAndOpen(page, query, expectedText) {
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText(expectedText);
-  console.log(`SUGGESTION: ${await first.innerText()}`);
-  console.log(`DATA: ${JSON.stringify(await first.evaluate(el => ({...el.dataset})))}`);
+  await expect(first).toHaveAttribute('data-search-index', '0');
   await first.click();
-  console.log(`HASH AFTER CLICK: ${await page.evaluate(() => location.hash)}`);
-  console.log(`OPEN PROCEDURES: ${await page.locator('.procedure[open]').count()}`);
   await expect(page.locator('.portal-search-flash')).toBeVisible();
   return page.locator('.portal-search-flash');
 }
@@ -34,6 +25,7 @@ test('suppléance mène directement à Scolago et fait flasher la ressource', as
   const errors = await openPortal(page);
   const target = await searchAndOpen(page, 'suppléance', 'Scolago');
   await expect(target).toContainText('Scolago');
+  await expect(page).toHaveURL(/#scolago$/);
   expect(errors).toEqual([]);
 });
 
@@ -41,6 +33,7 @@ test('plan de cl mène au Plan de classe et ouvre la fiche', async ({ page }) =>
   const errors = await openPortal(page);
   await searchAndOpen(page, 'plan de cl', 'Plan de classe');
   await expect(page.locator('#planclasse')).toHaveAttribute('open', '');
+  await expect(page).toHaveURL(/#planclasse$/);
   expect(errors).toEqual([]);
 });
 
@@ -69,7 +62,6 @@ test('le moteur tolère une faute simple', async ({ page }) => {
   const errors = await openPortal(page);
   const input = page.locator('#guide-search');
   await input.fill('suppleence');
-  console.log(`SUGGESTIONS TYPO: ${await page.locator('#search-suggestions .suggestion').count()}`);
   const first = page.locator('#search-suggestions .suggestion').first();
   await expect(first).toBeVisible();
   await expect(first).toContainText('Scolago');
