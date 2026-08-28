@@ -1,0 +1,37 @@
+name: Tests du portail
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'body-part-*.txt'
+      - '*.js'
+      - '*.css'
+      - 'assets/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'playwright.config.js'
+      - '.github/workflows/portal-tests.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Installer les dépendances
+        run: npm install --no-audit --no-fund
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Tester les parcours critiques
+        run: npm run test:e2e
