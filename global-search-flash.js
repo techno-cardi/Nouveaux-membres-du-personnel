@@ -224,7 +224,7 @@
       if (candidate.length < 3) continue;
       const threshold = candidate.length >= 8 ? 2 : 1;
       for (const word of entry.words) {
-        if (word.startsWith(candidate) || candidate.startsWith(word)) {
+        if (word.length >= 3 && (word.startsWith(candidate) || candidate.startsWith(word))) {
           best = Math.max(best, 22);
           continue;
         }
