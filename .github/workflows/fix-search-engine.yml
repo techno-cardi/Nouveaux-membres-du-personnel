@@ -21,23 +21,13 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-
           path = Path('global-search-flash.js')
           text = path.read_text(encoding='utf-8')
-          old = """        if (word.startsWith(candidate) || candidate.startsWith(word)) {
-          best = Math.max(best, 22);
-          continue;
-        }
-"""
-          new = """        if (word.length >= 3 && (word.startsWith(candidate) || candidate.startsWith(word))) {
-          best = Math.max(best, 22);
-          continue;
-        }
-"""
+          old = 'if (word.startsWith(candidate) || candidate.startsWith(word)) {'
+          new = 'if (word.length >= 3 && (word.startsWith(candidate) || candidate.startsWith(word))) {'
           if old not in text:
-              raise SystemExit('Bloc de comparaison partielle introuvable.')
-          text = text.replace(old, new, 1)
-          path.write_text(text, encoding='utf-8')
+              raise SystemExit('Comparaison partielle introuvable.')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
       - name: Enregistrer la correction
         run: |
