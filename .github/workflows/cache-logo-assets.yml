@@ -30,7 +30,7 @@ jobs:
           from pathlib import Path
           from urllib.parse import urlparse
           from urllib.request import Request, urlopen
-          import base64, hashlib, html, json, mimetypes, re
+          import base64, hashlib, html, json, re
 
           known = {
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6Hh2x1MfBsP45vdYHd7O98ZKj5_QOsqzzIJ52kVvye6Ppx5Zf4LwDpGN_&s=10': 'papercut',
@@ -116,7 +116,6 @@ jobs:
                   mapping[url] = target.as_posix()
                   print(f'OK {url} -> {target} ({len(data)} octets)')
               except Exception as exc:
-                  # Si une copie locale d'un logo connu existe déjà, on la conserve.
                   candidates = list(out.glob((known.get(url) or '___aucun___') + '.*')) if url in known else []
                   if candidates:
                       mapping[url] = candidates[0].as_posix()
@@ -124,7 +123,6 @@ jobs:
                   else:
                       print(f'WARNING {url}: {exc}')
 
-          # Mozaïk est fourni directement par l'école et est déjà sauvegardé dans /assets.
           mapping['__mozaik__'] = 'assets/mozaik.svg'
 
           Path('assets-map.js').write_text(
@@ -136,8 +134,6 @@ jobs:
               json.dumps(mapping, ensure_ascii=False, sort_keys=True, indent=2) + '\n', encoding='utf-8'
           )
 
-          # Remplace les URL d'images dans le contenu historique afin qu'aucune
-          # requête distante ne soit nécessaire au chargement des cartes.
           if legacy:
               localized = legacy
               for remote, local in mapping.items():
@@ -150,7 +146,6 @@ jobs:
               for index, chunk in enumerate(chunks):
                   Path(f'body-part-{index:02d}.txt').write_text(chunk, encoding='utf-8')
 
-          # Même principe pour les fichiers sources qui contiennent des URL de logos.
           for path in source_paths:
               if not path.exists():
                   continue
@@ -169,15 +164,30 @@ jobs:
               if updated != text:
                   path.write_text(updated, encoding='utf-8')
 
-          # Charge le manifeste et le correctif de logos avant ui-polish.js.
           index = Path('index.html')
           text = index.read_text(encoding='utf-8')
+
+          # Métadonnées officielles du portail et portée ARIA limitée au statut de recherche.
+          text = text.replace(
+              '<meta name="description" content="Guide du personnel de l\'École secondaire Cardinal-Roy">',
+              '<meta name="description" content="Portail du personnel de l\'École secondaire Cardinal-Roy - outils, ressources et procédures utiles au quotidien.">'
+          )
+          text = text.replace(
+              '<title>Guide du personnel | Cardinal-Roy</title>',
+              '<title>Portail Cardinal-Roy | École secondaire Cardinal-Roy</title>'
+          )
+          text = text.replace('<div id="app" aria-live="polite"></div>', '<div id="app"></div>')
+          text = text.replace('<noscript><main class="page"><h1>Guide du personnel</h1>', '<noscript><main class="page"><h1>Portail Cardinal-Roy</h1>')
+          text = text.replace("<main class=\"page\"><h1>Guide du personnel</h1><p>Le guide n’a pas pu être chargé.", "<main class=\"page\"><h1>Portail Cardinal-Roy</h1><p>Le portail n’a pas pu être chargé.")
+
           if "loadScript('source-patches-5.js')" not in text:
               needle = "    await loadScript('source-patches-4.js');\n"
               replacement = needle + "    await loadScript('assets-map.js');\n    await loadScript('source-patches-5.js');\n"
               if needle not in text:
                   raise RuntimeError('Point d’insertion introuvable dans index.html')
-              index.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
+              text = text.replace(needle, replacement, 1)
+
+          index.write_text(text, encoding='utf-8')
           PY
 
       - name: Commit cached assets
