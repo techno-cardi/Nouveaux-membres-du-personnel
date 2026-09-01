@@ -4,7 +4,7 @@
 
   const MOZAIK_LOGO = 'assets/vendor/moz.png';
   const CSSC_LOGO = 'assets/vendor/cssc.png';
-  const PERF_LOCAL_LOGO = 'https://appsp.ca/lancement/cardinal-roy/images/perf%20local.png';
+  const PERF_LOCAL_LOGO = 'assets/vendor/perf-20local-138294d2d1.png';
   const assetMap = window.PORTAL_ASSETS || {};
 
   const URLS = {
