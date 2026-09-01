@@ -131,7 +131,7 @@
   addSearchableCard({
     id: 'perf-central',
     title: 'Demande au comité de perfectionnement central (CSSC)',
-    subtitle: 'Formation, colloque, congrès et suppléance liée au perfectionnement',
+    subtitle: 'Formation, colloque, congrès et demande de perfectionnement',
     keywords: 'perfectionnement central comité central comite central CSSC formation formations libération liberation suppléance suppleance colloque congrès congres atelier développement professionnel developpement professionnel perfectionnement professionnel demande formulaire participation enseignant enseignante frais formation remplacement remplaçant remplacant',
     logo: CSSC_LOGO,
     logoAlt: 'Logo du Centre de services scolaire de la Capitale',
@@ -144,7 +144,7 @@
   addSearchableCard({
     id: 'perf-local',
     title: 'Demande au comité de perfectionnement local',
-    subtitle: 'Libération, formation et suppléance pour une activité de perfectionnement',
+    subtitle: 'Libération, formation et demande de perfectionnement',
     keywords: 'perfectionnement local comité local comite local formation formations libération liberation suppléance suppleance colloque congrès congres atelier développement professionnel developpement professionnel perfectionnement professionnel demande formulaire participation enseignant enseignante frais formation remplacement remplaçant remplacant',
     logo: PERF_LOCAL_LOGO,
     logoAlt: 'Comité de perfectionnement local',
