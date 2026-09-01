@@ -42,7 +42,7 @@ test('présences utilise le logo Mozaïk local', async ({ page }) => {
   const target = await searchAndOpen(page, 'présences', 'Présences');
   await expect(target).toContainText('Mozaïk');
   const logo = page.locator('#presences summary .procedure-visual img');
-  await expect(logo).toHaveAttribute('src', /assets\/mozaik\.svg$/);
+  await expect(logo).toHaveAttribute('src', /assets\/vendor\/moz\.png$/);
   expect(errors).toEqual([]);
 });
 
