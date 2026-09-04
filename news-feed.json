@@ -1,15 +1,7 @@
 {
-  "generated_at": "2026-09-04T10:48:46.070670-04:00",
+  "generated_at": "2026-09-04T13:50:52.855611-04:00",
   "source": "Google Calendar - Cardinal-Roy",
   "items": [
-    {
-      "title": "Fête de la Rentrée",
-      "start": "2026-09-04T11:30:00-04:00",
-      "end": "2026-09-04T12:30:00-04:00",
-      "all_day": false,
-      "kind": "evenement",
-      "icon": "🎉"
-    },
     {
       "title": "CONGÉ - Fête du Travail",
       "start": "2026-09-07T00:00:00-04:00",
@@ -97,6 +89,14 @@
       "all_day": false,
       "kind": "evenement",
       "icon": "🚪"
+    },
+    {
+      "title": "Photo de finissant",
+      "start": "2026-10-15T00:00:00-04:00",
+      "end": "2026-10-16T00:00:00-04:00",
+      "all_day": true,
+      "kind": "evenement",
+      "icon": "📸"
     }
   ]
 }
