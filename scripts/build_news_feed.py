@@ -3,6 +3,7 @@ import json
 import os
 import re
 import sys
+import time as time_module
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, time, timedelta
@@ -40,8 +41,30 @@ def urls_from_env():
     return urls
 
 
+def cache_busted_url(url):
+    """Ajoute un paramètre unique pour éviter une ancienne réponse iCal mise en cache."""
+    parts = urllib.parse.urlsplit(url)
+    query = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+    query.append(('_portal_refresh', str(time_module.time_ns())))
+    return urllib.parse.urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        parts.path,
+        urllib.parse.urlencode(query),
+        parts.fragment,
+    ))
+
+
 def fetch_ics(url):
-    request = urllib.request.Request(url, headers={'User-Agent': 'CardinalRoyPortal/1.0'})
+    fresh_url = cache_busted_url(url)
+    request = urllib.request.Request(
+        fresh_url,
+        headers={
+            'User-Agent': 'CardinalRoyPortal/1.0',
+            'Cache-Control': 'no-cache, no-store, max-age=0',
+            'Pragma': 'no-cache',
+        },
+    )
     with urllib.request.urlopen(request, timeout=30) as response:
         data = response.read()
         if not data.startswith(b'BEGIN:VCALENDAR'):
@@ -148,7 +171,7 @@ def main():
             data = fetch_ics(url)
             all_items.extend(parse_feed(data, now, horizon))
             successes += 1
-            print(f'Calendrier chargé: {url.split("?")[0]}')
+            print(f'Calendrier chargé sans cache: {url.split("?")[0]}')
         except Exception as exc:
             print(f'AVERTISSEMENT: impossible de charger un calendrier: {exc}', file=sys.stderr)
 
@@ -162,9 +185,8 @@ def main():
         deduped[key] = item
     items = sorted(deduped.values(), key=lambda item: item['start'])[:12]
 
-    # Le workflow vérifie toutes les 5 minutes. On ne touche au fichier que si
-    # les événements visibles ont réellement changé, afin d'éviter des centaines
-    # de commits identiques simplement à cause de l'heure de vérification.
+    # Le workflow vérifie fréquemment pendant les tests. On ne touche au fichier que si
+    # les événements visibles ont réellement changé, afin d'éviter des commits inutiles.
     if current_items() == items:
         print('Aucun changement dans les dates importantes.')
         return 0
