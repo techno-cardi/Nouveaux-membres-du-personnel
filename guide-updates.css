@@ -4,7 +4,7 @@
 .search-stage{
   background:#7f1427;
   color:#fff;
-  padding:34px 0 30px;
+  padding:20px 0 28px;
 }
 .search-stage-inner{
   display:flex;
@@ -335,7 +335,7 @@
 }
 
 @media(max-width:720px){
-  .search-stage{padding:28px 0 26px}
+  .search-stage{padding:18px 0 25px}
   .search-shell{grid-template-columns:30px minmax(0,1fr);border-radius:8px}
   .search-key{display:none}
   .search-under{align-items:flex-start;flex-direction:column;gap:5px}
