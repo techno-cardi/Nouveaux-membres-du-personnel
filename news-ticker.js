@@ -3,6 +3,43 @@
   const intro = host?.querySelector('.search-intro');
   if (!host || !intro || document.getElementById('school-news-ticker')) return;
 
+  if (!document.getElementById('school-news-ticker-style')) {
+    const style = document.createElement('style');
+    style.id = 'school-news-ticker-style';
+    style.textContent = `
+      .school-news-ticker{
+        width:min(820px,100%);min-height:44px;margin:0 0 19px;padding:7px 10px;
+        display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+        border:1px solid rgba(255,255,255,.34);border-radius:9px;
+        background:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+        color:#fff;overflow:hidden
+      }
+      .school-news-ticker[hidden]{display:none!important}
+      .school-news-badge{
+        display:inline-flex;align-items:center;gap:5px;white-space:nowrap;padding:5px 8px;border-radius:6px;
+        background:#fff;color:#7f1427;font-size:.76rem;font-weight:800;letter-spacing:.015em;text-transform:uppercase
+      }
+      .school-news-track{
+        min-width:0;display:flex;align-items:center;gap:8px;opacity:1;transform:translateY(0);
+        transition:opacity .22s ease,transform .22s ease
+      }
+      .school-news-track.is-changing{opacity:0;transform:translateY(3px)}
+      .school-news-date{flex:0 0 auto;color:#f9dfe6;font-size:.82rem;font-weight:700;white-space:nowrap}
+      .school-news-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;font-weight:600}
+      .school-news-count{color:#e9cbd3;font-size:.72rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+      @media(max-width:620px){
+        .school-news-ticker{grid-template-columns:auto minmax(0,1fr);gap:8px;margin-bottom:16px;padding:7px 8px}
+        .school-news-count{display:none}
+        .school-news-track{display:block}
+        .school-news-date{display:block;margin-bottom:1px;font-size:.75rem}
+        .school-news-text{display:block;font-size:.84rem}
+        .school-news-badge{font-size:.7rem;padding:5px 7px}
+      }
+      @media(prefers-reduced-motion:reduce){.school-news-track{transition:none}}
+    `;
+    document.head.appendChild(style);
+  }
+
   const TIMEZONE = 'America/Toronto';
   const ROTATION_MS = 10000;
   const ticker = document.createElement('aside');
