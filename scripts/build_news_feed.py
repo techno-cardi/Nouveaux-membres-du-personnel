@@ -5,7 +5,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -49,7 +49,7 @@ def fetch_ics(url):
         return data
 
 
-def as_datetime(value, *, end=False):
+def as_datetime(value):
     if isinstance(value, datetime):
         if value.tzinfo is None:
             return value.replace(tzinfo=TZ)
@@ -107,7 +107,7 @@ def parse_feed(data, now, horizon):
         all_day = isinstance(raw_start, date) and not isinstance(raw_start, datetime)
         start = as_datetime(raw_start)
         if raw_end is not None:
-            end = as_datetime(raw_end, end=True)
+            end = as_datetime(raw_end)
         elif all_day:
             end = start + timedelta(days=1)
         else:
@@ -125,6 +125,16 @@ def parse_feed(data, now, horizon):
             'icon': icon,
         })
     return items
+
+
+def current_items():
+    if not OUTPUT.exists():
+        return None
+    try:
+        payload = json.loads(OUTPUT.read_text(encoding='utf-8'))
+        return payload.get('items') if isinstance(payload, dict) else None
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
 def main():
@@ -152,13 +162,20 @@ def main():
         deduped[key] = item
     items = sorted(deduped.values(), key=lambda item: item['start'])[:12]
 
+    # Le workflow vérifie toutes les 5 minutes. On ne touche au fichier que si
+    # les événements visibles ont réellement changé, afin d'éviter des centaines
+    # de commits identiques simplement à cause de l'heure de vérification.
+    if current_items() == items:
+        print('Aucun changement dans les dates importantes.')
+        return 0
+
     payload = {
         'generated_at': now.isoformat(),
         'source': 'Google Calendar - Cardinal-Roy',
         'items': items,
     }
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'{len(items)} actualités écrites dans {OUTPUT}.')
+    print(f'{len(items)} dates importantes écrites dans {OUTPUT}.')
     return 0
 
 
