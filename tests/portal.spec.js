@@ -137,19 +137,37 @@ test('la navigation affiche les deux nouvelles catégories', async ({ page }) =>
   expect(errors).toEqual([]);
 });
 
-test('le bandeau Actualités apparaît au-dessus de la recherche et utilise une rotation de 10 secondes', async ({ page }) => {
+test('le bandeau Dates importantes tourne aux 5 secondes et permet de naviguer manuellement', async ({ page }) => {
   const errors = await openPortal(page);
   const ticker = page.locator('#school-news-ticker');
   await expect(ticker).toBeVisible();
-  await expect(ticker).toHaveAttribute('data-rotation-ms', '10000');
+  await expect(ticker).toHaveAttribute('data-rotation-ms', '5000');
   await expect(ticker).toHaveAttribute('data-item-count', /[1-9]\d*/);
-  await expect(ticker.locator('.school-news-badge')).toContainText('Actualités');
+  await expect(ticker.locator('.school-news-badge')).toContainText('Dates importantes');
   await expect(ticker.locator('.school-news-text')).not.toHaveText('');
   const tickerBox = await ticker.boundingBox();
   const introBox = await page.locator('.search-intro').boundingBox();
   expect(tickerBox).not.toBeNull();
   expect(introBox).not.toBeNull();
   expect(tickerBox.y).toBeLessThan(introBox.y);
+
+  const initialIndex = Number(await ticker.getAttribute('data-current-index'));
+  await ticker.locator('.school-news-next').click();
+  await expect.poll(async () => Number(await ticker.getAttribute('data-current-index'))).toBe(initialIndex + 1);
+  await ticker.locator('.school-news-prev').click();
+  await expect.poll(async () => Number(await ticker.getAttribute('data-current-index'))).toBe(initialIndex);
+  expect(errors).toEqual([]);
+});
+
+test('les Dates importantes continuent à avancer même si la souris reste dessus', async ({ page }) => {
+  const errors = await openPortal(page);
+  const ticker = page.locator('#school-news-ticker');
+  await expect(ticker).toBeVisible();
+  const itemCount = Number(await ticker.getAttribute('data-item-count'));
+  test.skip(itemCount < 2, 'Un seul événement à venir');
+  const initialIndex = Number(await ticker.getAttribute('data-current-index'));
+  await ticker.hover();
+  await expect.poll(async () => Number(await ticker.getAttribute('data-current-index')), { timeout: 7000 }).not.toBe(initialIndex);
   expect(errors).toEqual([]);
 });
 
