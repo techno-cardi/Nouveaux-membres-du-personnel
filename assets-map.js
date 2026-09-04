@@ -14,3 +14,20 @@ window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, {
   "https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Drive_icon_%282026%29.svg": "assets/vendor/google-drive.svg",
   "https://www.google.com/chrome/static/images/chrome-logo-m100.svg": "assets/vendor/chrome.svg"
 });
+
+// Les ressources locales approuvées sont appliquées avant ui-polish.js afin
+// qu'elles soient intégrées nativement à la recherche, aux favoris et aux catégories.
+(() => {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', 'source-patches-6.js', false);
+  try {
+    xhr.send(null);
+    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) {
+      (0, eval)(`${xhr.responseText}\n//# sourceURL=source-patches-6.js`);
+    } else {
+      console.error('Impossible de charger source-patches-6.js', xhr.status);
+    }
+  } catch (error) {
+    console.error('Impossible de charger source-patches-6.js', error);
+  }
+})();
