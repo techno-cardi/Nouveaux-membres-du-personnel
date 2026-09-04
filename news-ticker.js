@@ -49,12 +49,14 @@
 
   const TIMEZONE = 'America/Toronto';
   const ROTATION_MS = 5000;
+  const REFRESH_MS = 5 * 60 * 1000;
   const ticker = document.createElement('aside');
   ticker.id = 'school-news-ticker';
   ticker.className = 'school-news-ticker';
   ticker.hidden = true;
   ticker.setAttribute('aria-label', 'Dates importantes à venir');
   ticker.setAttribute('data-rotation-ms', String(ROTATION_MS));
+  ticker.setAttribute('data-refresh-ms', String(REFRESH_MS));
   ticker.innerHTML = `
     <span class="school-news-badge"><span aria-hidden="true">📅</span> Dates importantes</span>
     <span class="school-news-track" aria-live="polite">
@@ -77,7 +79,9 @@
   let items = [];
   let index = 0;
   let timer = 0;
+  let refreshTimer = 0;
   let transitionTimer = 0;
+  let feedSignature = '';
 
   const dateKey = value => new Intl.DateTimeFormat('en-CA', {
     timeZone: TIMEZONE,
@@ -112,6 +116,8 @@
     return end.getTime() >= Date.now() - 15 * 60 * 1000;
   };
 
+  const itemKey = item => `${item.title || ''}|${item.start || ''}|${item.end || ''}`;
+
   const render = (nextIndex, animate = true) => {
     if (!items.length) return;
     index = (nextIndex + items.length) % items.length;
@@ -141,7 +147,21 @@
 
   const start = () => {
     stop();
-    if (items.length > 1) timer = window.setInterval(() => render(index + 1), ROTATION_MS);
+    if (!document.hidden && items.length > 1) {
+      timer = window.setInterval(() => render(index + 1), ROTATION_MS);
+    }
+  };
+
+  const stopRefresh = () => {
+    if (refreshTimer) window.clearInterval(refreshTimer);
+    refreshTimer = 0;
+  };
+
+  const startRefresh = () => {
+    stopRefresh();
+    if (!document.hidden) {
+      refreshTimer = window.setInterval(() => load(), REFRESH_MS);
+    }
   };
 
   const browse = direction => {
@@ -151,16 +171,38 @@
 
   const load = async () => {
     try {
-      const cacheHour = Math.floor(Date.now() / 3600000);
-      const response = await fetch(`news-feed.json?v=${cacheHour}`, { cache: 'no-cache' });
+      const currentItem = items[index];
+      const currentKey = currentItem ? itemKey(currentItem) : '';
+      const currentTitle = currentItem?.title || '';
+      const response = await fetch(`news-feed.json?v=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const feed = await response.json();
-      items = Array.isArray(feed.items) ? feed.items.filter(isUpcoming) : [];
-      items.sort((a, b) => new Date(a.start) - new Date(b.start));
-      if (!items.length) return;
+      const nextItems = Array.isArray(feed.items) ? feed.items.filter(isUpcoming) : [];
+      nextItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+      if (!nextItems.length) {
+        items = [];
+        feedSignature = '';
+        ticker.hidden = true;
+        ticker.dataset.itemCount = '0';
+        stop();
+        return;
+      }
+
+      const nextSignature = JSON.stringify(nextItems.map(itemKey));
+      const changed = nextSignature !== feedSignature;
+      let nextIndex = 0;
+      if (currentKey) nextIndex = nextItems.findIndex(item => itemKey(item) === currentKey);
+      if (nextIndex < 0 && currentTitle) nextIndex = nextItems.findIndex(item => item.title === currentTitle);
+      if (nextIndex < 0) nextIndex = Math.min(index, nextItems.length - 1);
+
+      items = nextItems;
+      index = nextIndex;
+      feedSignature = nextSignature;
       ticker.hidden = false;
       ticker.dataset.itemCount = String(items.length);
-      render(0, false);
+      ticker.dataset.lastRefresh = String(Date.now());
+      if (changed || !textNode.textContent) render(index, false);
       start();
     } catch (error) {
       console.warn('Dates importantes indisponibles :', error);
@@ -169,7 +211,14 @@
 
   prevButton.addEventListener('click', () => browse(-1));
   nextButton.addEventListener('click', () => browse(1));
-  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stop();
+      stopRefresh();
+      return;
+    }
+    load().finally(startRefresh);
+  });
 
-  load();
+  load().finally(startRefresh);
 })();
