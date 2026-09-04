@@ -136,3 +136,29 @@ test('la navigation affiche les deux nouvelles catégories', async ({ page }) =>
   await expect(page).toHaveURL(/#section-formulaires$/);
   expect(errors).toEqual([]);
 });
+
+test('le bandeau Actualités apparaît au-dessus de la recherche et utilise une rotation de 10 secondes', async ({ page }) => {
+  const errors = await openPortal(page);
+  const ticker = page.locator('#school-news-ticker');
+  await expect(ticker).toBeVisible();
+  await expect(ticker).toHaveAttribute('data-rotation-ms', '10000');
+  await expect(ticker).toHaveAttribute('data-item-count', /[1-9]\d*/);
+  await expect(ticker.locator('.school-news-badge')).toContainText('Actualités');
+  await expect(ticker.locator('.school-news-text')).not.toHaveText('');
+  const tickerBox = await ticker.boundingBox();
+  const introBox = await page.locator('.search-intro').boundingBox();
+  expect(tickerBox).not.toBeNull();
+  expect(introBox).not.toBeNull();
+  expect(tickerBox.y).toBeLessThan(introBox.y);
+  expect(errors).toEqual([]);
+});
+
+test('le résultat de recherche lance le halo Cardinal-Roy après le défilement', async ({ page }) => {
+  const errors = await openPortal(page);
+  const target = await searchAndOpen(page, 'plan de classe', 'Plan de classe');
+  const animationName = await target.evaluate(node => getComputedStyle(node).animationName);
+  const animationDuration = await target.evaluate(node => getComputedStyle(node).animationDuration);
+  expect(animationName).toContain('cardiSearchGlow');
+  expect(animationDuration).toContain('2.65s');
+  expect(errors).toEqual([]);
+});
