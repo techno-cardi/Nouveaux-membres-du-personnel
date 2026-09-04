@@ -4,20 +4,13 @@
   const status = document.getElementById('search-status');
   if (!previousInput || !suggestions) return;
 
-  /*
-   * Moteur de recherche unique du portail.
-   * On remplace le champ par un clone afin de retirer proprement les anciens
-   * écouteurs ajoutés par les versions précédentes, sans toucher aux fonctions
-   * de favoris et de navigation générale de l'interface.
-   */
+  /* Moteur de recherche unique : le clone retire les anciens écouteurs sans
+     toucher aux favoris ni à la navigation générale. */
   const input = previousInput.cloneNode(true);
   previousInput.replaceWith(input);
   window.PORTAL_SEARCH_ENGINE = '2.0';
 
-  /* Logo Mozaïk fourni pour le portail. Il est intégré directement au code afin
-     de ne pas dépendre d'un hébergeur externe. */
   const MOZAIK_LOGO = 'assets/vendor/moz.png';
-
   const normalize = value => (value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -58,16 +51,6 @@
     style.id = 'portal-search-engine-style';
     style.textContent = `
       .procedure,.subresource-search-target{scroll-margin-top:115px}
-      .procedure.portal-search-flash,.subresource-search-target.portal-search-flash{
-        animation:portalSearchFlash 2.35s ease both;position:relative;z-index:3
-      }
-      @keyframes portalSearchFlash{
-        0%{box-shadow:0 0 0 0 rgba(127,20,39,0);border-color:inherit;background:inherit;transform:translateY(0)}
-        14%{box-shadow:0 0 0 7px rgba(127,20,39,.22),0 14px 30px rgba(76,13,29,.17);border-color:#7f1427;background:#fff3f6;transform:translateY(-2px)}
-        34%{box-shadow:0 0 0 2px rgba(127,20,39,.08),0 8px 18px rgba(53,31,36,.09);border-color:#c99da8;background:#fff;transform:translateY(0)}
-        55%{box-shadow:0 0 0 7px rgba(127,20,39,.19),0 14px 30px rgba(76,13,29,.15);border-color:#7f1427;background:#fff5f7;transform:translateY(-1px)}
-        100%{box-shadow:0 0 0 0 rgba(127,20,39,0);border-color:inherit;background:inherit;transform:translateY(0)}
-      }
       .suggestion.is-active{background:#f5e8ec!important;box-shadow:inset 4px 0 0 #7f1427}
       .suggestion-copy small{display:block}
       .asset-fallback-holder{display:grid!important;place-items:center!important}
@@ -83,15 +66,11 @@
       #back-to-top:hover{background:#7f1427;color:#fff}
       #back-to-top .back-top-arrow{font-size:1.05rem;line-height:1}
       @media(max-width:620px){#back-to-top{right:14px;bottom:14px;padding:10px 13px}}
-      @media(prefers-reduced-motion:reduce){
-        .procedure.portal-search-flash,.subresource-search-target.portal-search-flash{animation:none;outline:4px solid rgba(127,20,39,.35);outline-offset:4px}
-        #back-to-top{transition:none}
-      }
+      @media(prefers-reduced-motion:reduce){#back-to-top{transition:none}}
     `;
     document.head.appendChild(style);
   }
 
-  /* Dégradation propre si un logo distant devient indisponible. */
   const fallbackSymbol = img => {
     const text = normalize(`${img.alt || ''} ${img.src || ''} ${img.closest('.procedure,.resource-box')?.textContent || ''}`);
     if (/papercut|repro|imprim|photocop/.test(text)) return '🖨️';
@@ -213,14 +192,12 @@
   });
 
   const tokenAlternatives = token => [token, ...(ALIASES.get(token) || [])];
-
   const tokenScore = (entry, token) => {
     let best = -1;
     for (const candidate of tokenAlternatives(token)) {
       if (entry.titleNorm.includes(candidate)) best = Math.max(best, 52);
       if (entry.subtitleNorm.includes(candidate)) best = Math.max(best, 34);
       if (entry.haystack.includes(candidate)) best = Math.max(best, 28);
-
       if (candidate.length < 3) continue;
       const threshold = candidate.length >= 8 ? 2 : 1;
       for (const word of entry.words) {
@@ -251,7 +228,6 @@
     else if (entry.titleNorm.includes(q)) score += 300;
     if (entry.subtitleNorm.includes(q)) score += 140;
     if (entry.haystack.includes(q)) score += 170;
-
     for (const token of tokens) {
       const part = tokenScore(entry, token);
       if (part < 0) return -1;
@@ -268,7 +244,6 @@
       .map(entry => ({entry, score:scoreEntry(entry, q)}))
       .filter(result => result.score >= 0)
       .sort((a,b) => b.score - a.score || a.entry.title.localeCompare(b.entry.title,'fr'));
-
     const hasSubresource = matches.some(result => result.entry.type === 'subresource');
     if (hasSubresource && !q.includes('applications cssc')) {
       matches = matches.filter(result => !(result.entry.type === 'procedure' && result.entry.id === 'applications-cssc'));
@@ -309,12 +284,10 @@
     suggestions.hidden = false;
     input.setAttribute('aria-expanded','true');
     if (status) status.textContent = currentMatches.length ? `${currentMatches.length} suggestion${currentMatches.length > 1 ? 's' : ''}` : 'Aucune suggestion';
-
     if (!currentMatches.length) {
       suggestions.innerHTML = '<div class="no-suggestion">Essayez un autre mot : application, tâche, élève, absence, réservation…</div>';
       return;
     }
-
     suggestions.innerHTML = currentMatches.map((entry,index) => `
       <button type="button" class="suggestion" role="option" aria-selected="false" data-search-index="${index}" ${entry.type === 'subresource' ? `data-search-subresource="${escapeHtml(entry.id)}"` : `data-search-open="${escapeHtml(entry.id)}"`}>
         ${entry.visual}
@@ -328,36 +301,43 @@
 
   const flash = target => {
     if (!target) return;
-    window.setTimeout(() => {
-      target.classList.remove('portal-search-flash');
-      void target.offsetWidth;
-      target.classList.add('portal-search-flash');
-      window.setTimeout(() => target.classList.remove('portal-search-flash'),2600);
-    },360);
+    target.classList.remove('portal-search-flash');
+    void target.offsetWidth;
+    target.classList.add('portal-search-flash');
+    window.setTimeout(() => target.classList.remove('portal-search-flash'),2900);
+  };
+
+  /* Le flash démarre lorsque le défilement est terminé. Avant, il se jouait en
+     partie pendant la descente et l'utilisateur n'en voyait que la fin. */
+  const scrollAndFlash = (target, block = 'start') => {
+    let finished = false;
+    let fallback = 0;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener('scrollend', finish);
+      if (fallback) window.clearTimeout(fallback);
+      flash(target);
+    };
+    if ('onscrollend' in window) window.addEventListener('scrollend', finish, {once:true});
+    target.scrollIntoView({behavior:'smooth', block});
+    fallback = window.setTimeout(finish, 850);
   };
 
   const openEntry = entry => {
     if (!entry?.node) return;
     hideSuggestions();
     input.blur();
-
     if (entry.type === 'subresource') {
       const parent = document.getElementById(entry.parentId);
       if (parent?.classList.contains('procedure')) parent.open = true;
       history.replaceState(null,'',`#${entry.id}`);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        entry.node.scrollIntoView({behavior:'smooth',block:'center'});
-        flash(entry.node);
-      }));
+      requestAnimationFrame(() => requestAnimationFrame(() => scrollAndFlash(entry.node, 'center')));
       return;
     }
-
     entry.node.open = true;
     history.replaceState(null,'',`#${entry.id}`);
-    requestAnimationFrame(() => {
-      entry.node.scrollIntoView({behavior:'smooth',block:'start'});
-      flash(entry.node);
-    });
+    requestAnimationFrame(() => scrollAndFlash(entry.node, 'start'));
   };
 
   const activateIndex = index => {
@@ -401,7 +381,6 @@
     const button = event.target.closest('.suggestion[data-search-index]');
     if (button) setActive(Number(button.dataset.searchIndex));
   });
-
   suggestions.addEventListener('click',event => {
     const button = event.target.closest('.suggestion[data-search-index]');
     if (!button) return;
@@ -409,12 +388,10 @@
     event.stopPropagation();
     activateIndex(Number(button.dataset.searchIndex));
   });
-
   document.addEventListener('click',event => {
     if (!event.target.closest('.search-shell')) hideSuggestions();
   });
 
-  /* Ctrl/Cmd + K : intercepte l'ancien raccourci avant les écouteurs historiques. */
   document.addEventListener('keydown',event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
@@ -438,7 +415,6 @@
   const updateBackToTop = () => backToTop.classList.toggle('is-visible',window.scrollY > 520);
   updateBackToTop();
   window.addEventListener('scroll',updateBackToTop,{passive:true});
-
   backToTop.addEventListener('click',() => {
     document.querySelectorAll('.procedure[open]').forEach(procedure => { procedure.open = false; });
     document.querySelectorAll('.portal-search-flash,.search-focus-flash,.global-search-flash').forEach(node => node.classList.remove('portal-search-flash','search-focus-flash','global-search-flash'));
@@ -448,10 +424,18 @@
     window.scrollTo({top:0,behavior:'smooth'});
   });
 
-  /* Les liens profonds continuent de fonctionner après la consolidation du moteur. */
   if (location.hash) {
     const id = decodeURIComponent(location.hash.slice(1));
     const entry = entries.find(candidate => candidate.id === id);
     if (entry) window.setTimeout(() => openEntry(entry),120);
+  }
+
+  /* Le fil d'actualités est indépendant du moteur de recherche. On le charge ici
+     parce que l'interface est déjà entièrement rendue à ce moment. */
+  if (!document.querySelector('script[data-school-news-ticker]')) {
+    const newsScript = document.createElement('script');
+    newsScript.src = 'news-ticker.js';
+    newsScript.dataset.schoolNewsTicker = 'true';
+    document.body.appendChild(newsScript);
   }
 })();
