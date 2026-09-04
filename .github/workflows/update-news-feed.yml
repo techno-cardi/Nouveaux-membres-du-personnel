@@ -1,0 +1,49 @@
+name: Mise à jour des actualités
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/build_news_feed.py'
+      - '.github/workflows/update-news-feed.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    env:
+      # Facultatif si le calendrier est public. Pour un calendrier privé,
+      # ajouter l'adresse iCal secrète dans Settings > Secrets and variables > Actions.
+      CARDINAL_CALENDAR_ICAL_URL: ${{ secrets.CARDINAL_CALENDAR_ICAL_URL }}
+      CARDINAL_SCHOOL_CALENDAR_ICAL_URL: ${{ secrets.CARDINAL_SCHOOL_CALENDAR_ICAL_URL }}
+    steps:
+      - name: Récupérer le portail
+        uses: actions/checkout@v4
+
+      - name: Préparer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Installer le lecteur iCal
+        run: python -m pip install --disable-pip-version-check icalendar recurring-ical-events
+
+      - name: Mettre à jour les actualités
+        run: python scripts/build_news_feed.py
+
+      - name: Publier seulement si le fil a changé
+        shell: bash
+        run: |
+          if git diff --quiet -- news-feed.json; then
+            echo "Aucune modification à publier."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add news-feed.json
+          git commit -m "Mettre à jour les actualités du calendrier"
+          git push
