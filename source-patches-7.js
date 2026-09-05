@@ -4,6 +4,7 @@
 
   const PDF_URL = 'https://drive.google.com/file/d/1bfyqip0TJWvj58fUznfQzTx4Oc21i3PN/view?usp=drivesdk';
   const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/u/0?cid=Y184NTI3ZTI0YjZmOWRjOWYwMjg0MzlmY2Y1YzJhMzY1NzQ3NTY5OGM5ZTQxNTFhYzkzY2QyZDkyMDViMzIyYmFhQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20';
+  const OUTLOOK_ICAL_URL = 'https://calendar.google.com/calendar/ical/c_8527e24b6f9dc9f028439fcf5c2a3657475698c9e4151ac93cd2d9205b322baa%40group.calendar.google.com/public/basic.ics';
 
   const card = document.createElement('section');
   card.className = 'card searchable';
@@ -18,7 +19,7 @@
     'session évaluation session evaluation session examens examens gels horaire épreuves uniques ministérielles epreuves uniques ministerielles',
     'portes ouvertes SAÉ SAE découvertes decouvertes soirée information soiree information fête rentrée fete rentree Halloween Noël Noel St-Valentin Saint-Valentin Pâques Paques',
     'gala méritas gala meritas gala sportif collation grades bal finissants photo finissant reprise photo semaine multiculturelle',
-    'agenda calendrier partagé calendrier partage ajouter calendrier Google Agenda Google Calendar Outlook Microsoft 365 abonnement calendrier synchronisation'
+    'agenda calendrier partagé calendrier partage ajouter calendrier Google Agenda Google Calendar Outlook Microsoft 365 abonnement calendrier synchronisation iCal ics copier lien presse papier'
   ].join(' ');
 
   card.innerHTML = `
@@ -46,18 +47,56 @@
         </ol>
       </div>
 
-      <div class="callout">
+      <div class="callout outlook-calendar-help">
         <strong>Ajouter le calendrier dans Outlook</strong>
+        <p>Outlook a besoin du lien d’abonnement iCal du calendrier. Vous n’avez pas à le chercher : copiez-le directement ici.</p>
+        <p><button type="button" class="btn primary calendar-copy-link" data-copy-value="${OUTLOOK_ICAL_URL}">📋 Copier le lien pour Outlook</button> <span class="calendar-copy-status" aria-live="polite"></span></p>
         <ol>
+          <li>Cliquez sur <strong>Copier le lien pour Outlook</strong> ci-dessus.</li>
           <li>Dans Outlook sur le web, ouvrez <strong>Calendrier</strong>, puis <strong>Ajouter un calendrier</strong>.</li>
           <li>Choisissez <strong>S’abonner à partir du web</strong>.</li>
-          <li>Collez l’<strong>adresse iCal (.ics)</strong> du calendrier, donnez-lui un nom, puis choisissez <strong>Importer</strong> ou <strong>Enregistrer</strong>.</li>
+          <li>Collez le lien avec <strong>Ctrl + V</strong>, donnez un nom au calendrier, puis cliquez sur <strong>Importer</strong> ou <strong>Enregistrer</strong>.</li>
         </ol>
-        <p><strong>Important :</strong> le lien Google ci-dessus sert à l’ajout dans Google Agenda; Outlook exige une adresse iCal pour un abonnement synchronisé. Une simple importation d’un fichier .ics crée plutôt une copie qui ne se met pas à jour automatiquement.</p>
+        <p><strong>À privilégier :</strong> l’abonnement à partir du web permet à Outlook de recevoir les changements du calendrier. Évitez d’importer seulement un fichier .ics, car cette méthode crée plutôt une copie ponctuelle.</p>
       </div>
     </div>`;
 
   root.appendChild(card);
+
+  const copyButton = card.querySelector('.calendar-copy-link');
+  const copyStatus = card.querySelector('.calendar-copy-status');
+  const copyText = async value => {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    textarea.remove();
+    return ok;
+  };
+
+  copyButton?.addEventListener('click', async () => {
+    const value = copyButton.dataset.copyValue || '';
+    try {
+      const copied = await copyText(value);
+      if (!copied) throw new Error('copy failed');
+      copyButton.textContent = '✓ Lien copié';
+      if (copyStatus) copyStatus.textContent = 'Le lien est dans votre presse-papiers.';
+      setTimeout(() => {
+        copyButton.textContent = '📋 Copier le lien pour Outlook';
+        if (copyStatus) copyStatus.textContent = '';
+      }, 3500);
+    } catch {
+      if (copyStatus) copyStatus.textContent = 'Impossible de copier automatiquement. Sélectionnez le lien et copiez-le manuellement.';
+    }
+  });
 
   // Cette ressource appartient à « Calendriers et organisation scolaire »,
   // catégorie créée après le rendu principal du portail.
