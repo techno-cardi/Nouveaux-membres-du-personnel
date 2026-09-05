@@ -9,10 +9,13 @@ test('le calendrier des dates importantes offre un lien Outlook copiable', async
 
   const card = page.locator('#section-organisation-scolaire #dates-importantes-2026-2027');
   await expect(card).toHaveCount(1);
+  await card.locator('summary').click();
+  await expect(card).toHaveAttribute('open', '');
 
   const copyButton = card.locator('.calendar-copy-link');
   await expect(copyButton).toBeVisible();
   await expect(copyButton).toContainText('Copier le lien pour Outlook');
+  await expect(copyButton).toHaveAttribute('data-copy-bound', 'true');
   await expect(copyButton).toHaveAttribute('data-copy-value', /^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\/public\/basic\.ics$/);
   await expect(card).toContainText('S’abonner à partir du web');
   await expect(card).toContainText('Ctrl + V');
