@@ -14,32 +14,3 @@ window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, {
   "https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Drive_icon_%282026%29.svg": "assets/vendor/google-drive.svg",
   "https://www.google.com/chrome/static/images/chrome-logo-m100.svg": "assets/vendor/chrome.svg"
 });
-
-// Les ressources locales approuvées sont appliquées avant ui-polish.js afin
-// qu'elles soient intégrées nativement à la recherche, aux favoris et aux catégories.
-(() => {
-  const applyPatch = filename => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', filename, false);
-    xhr.send(null);
-    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) {
-      (0, eval)(`${xhr.responseText}\n//# sourceURL=${filename}`);
-      return true;
-    }
-    console.error(`Impossible de charger ${filename}`, xhr.status);
-    return false;
-  };
-
-  try {
-    if (applyPatch('source-patches-6.js')) {
-      // L'autorisation de sortie se remplit maintenant directement dans AppSP.
-      const sortieLink = [...document.querySelectorAll('#legacy-source #sortie-educative a[href]')]
-        .find(link => /demande d.?autorisation/i.test(link.textContent || ''));
-      if (sortieLink) sortieLink.href = 'https://appsp.ca/formulaire/depot.php?id=5';
-    }
-
-    applyPatch('source-patches-7.js');
-  } catch (error) {
-    console.error('Impossible de charger les ressources locales du portail', error);
-  }
-})();
