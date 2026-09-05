@@ -125,3 +125,25 @@ test('la fenêtre d’aide Chrome s’ouvre, reste dans l’écran et se ferme c
   await dialog.locator('.chrome-dialog-close').click();
   await expect(dialog).not.toBeVisible();
 });
+
+test('les catégories gardent leurs liens et le calendrier reste dans Organisation scolaire', async ({ page }) => {
+  await openPortal(page);
+
+  const saeSection = page.locator('#section-encadrement-sae');
+  const saeNav = page.locator('.section-nav-inner a[href="#section-encadrement-sae"]');
+  await expect(saeSection).toHaveCount(1);
+  await expect(saeNav).toHaveCount(1);
+  await expect(saeNav).toContainText('Système d’encadrement SAÉ');
+
+  const datesInSchoolOrg = page.locator('#section-organisation-scolaire .procedure-list > #dates-importantes-2026-2027');
+  await expect(datesInSchoolOrg).toHaveCount(1);
+
+  const categoryHrefs = await page.locator('.section-nav-inner a[href^="#section-"]').evaluateAll(links => links.map(link => link.getAttribute('href')));
+  expect(categoryHrefs).toContain('#section-classe');
+  expect(categoryHrefs).toContain('#section-encadrement-sae');
+  expect(categoryHrefs).toContain('#section-organisation-scolaire');
+
+  await saeNav.click();
+  await expect(page).toHaveURL(/#section-encadrement-sae$/);
+  await expectNoHorizontalOverflow(page);
+});
