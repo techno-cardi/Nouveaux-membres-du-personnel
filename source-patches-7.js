@@ -63,8 +63,6 @@
 
   root.appendChild(card);
 
-  const copyButton = card.querySelector('.calendar-copy-link');
-  const copyStatus = card.querySelector('.calendar-copy-status');
   const copyText = async value => {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(value);
@@ -82,21 +80,28 @@
     return ok;
   };
 
-  copyButton?.addEventListener('click', async () => {
-    const value = copyButton.dataset.copyValue || '';
-    try {
-      const copied = await copyText(value);
-      if (!copied) throw new Error('copy failed');
-      copyButton.textContent = '✓ Lien copié';
-      if (copyStatus) copyStatus.textContent = 'Le lien est dans votre presse-papiers.';
-      setTimeout(() => {
-        copyButton.textContent = '📋 Copier le lien pour Outlook';
-        if (copyStatus) copyStatus.textContent = '';
-      }, 3500);
-    } catch {
-      if (copyStatus) copyStatus.textContent = 'Impossible de copier automatiquement. Sélectionnez le lien et copiez-le manuellement.';
-    }
-  });
+  const bindCopyButton = procedure => {
+    const copyButton = procedure?.querySelector('.calendar-copy-link');
+    const copyStatus = procedure?.querySelector('.calendar-copy-status');
+    if (!copyButton || copyButton.dataset.copyBound === 'true') return;
+    copyButton.dataset.copyBound = 'true';
+
+    copyButton.addEventListener('click', async () => {
+      const value = copyButton.dataset.copyValue || '';
+      try {
+        const copied = await copyText(value);
+        if (!copied) throw new Error('copy failed');
+        copyButton.textContent = '✓ Lien copié';
+        if (copyStatus) copyStatus.textContent = 'Le lien est dans votre presse-papiers.';
+        setTimeout(() => {
+          copyButton.textContent = '📋 Copier le lien pour Outlook';
+          if (copyStatus) copyStatus.textContent = '';
+        }, 3500);
+      } catch {
+        if (copyStatus) copyStatus.textContent = 'Impossible de copier automatiquement. Sélectionnez le lien et copiez-le manuellement.';
+      }
+    });
+  };
 
   // Cette ressource appartient à « Calendriers et organisation scolaire »,
   // catégorie créée après le rendu principal du portail.
@@ -105,6 +110,7 @@
     const list = document.querySelector('#section-organisation-scolaire .procedure-list');
     if (!procedure || !list) return false;
     if (procedure.parentElement !== list) list.appendChild(procedure);
+    bindCopyButton(procedure);
     return true;
   };
 
