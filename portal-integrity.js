@@ -64,11 +64,25 @@
     });
   };
 
-  repairStructure();
-
-  const target = document.getElementById('app') || document.body;
   const observer = new MutationObserver(scheduleRepair);
-  observer.observe(target, { childList: true, subtree: true });
+  const observeStructure = () => {
+    const host = document.getElementById('category-sections');
+    const nav = document.querySelector('.section-nav-inner');
+    if (!host || !nav) return false;
+    observer.disconnect();
+    observer.observe(host, { childList: true, subtree: true });
+    observer.observe(nav, { childList: true, subtree: true });
+    return true;
+  };
+
+  repairStructure();
+  if (!observeStructure()) {
+    const bootstrapObserver = new MutationObserver(() => {
+      if (repairStructure() && observeStructure()) bootstrapObserver.disconnect();
+    });
+    bootstrapObserver.observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
+    window.setTimeout(() => bootstrapObserver.disconnect(), 12000);
+  }
 
   // Après le chargement, une dernière passe couvre aussi les navigateurs qui
   // planifient différemment les callbacks de MutationObserver.
