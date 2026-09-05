@@ -1,4 +1,11 @@
 (() => {
+  if (!document.querySelector('script[data-portal-integrity]')) {
+    const integrityScript = document.createElement('script');
+    integrityScript.src = 'portal-integrity.js';
+    integrityScript.dataset.portalIntegrity = 'true';
+    document.body.appendChild(integrityScript);
+  }
+
   const host = document.querySelector('.search-stage-inner');
   const intro = host?.querySelector('.search-intro');
   if (!host || !intro || document.getElementById('school-news-ticker')) return;
