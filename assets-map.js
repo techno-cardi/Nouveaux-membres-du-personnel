@@ -24,6 +24,11 @@ window.PORTAL_ASSETS = Object.assign(window.PORTAL_ASSETS || {}, {
     xhr.send(null);
     if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) {
       (0, eval)(`${xhr.responseText}\n//# sourceURL=source-patches-6.js`);
+
+      // L'autorisation de sortie se remplit maintenant directement dans AppSP.
+      const sortieLink = [...document.querySelectorAll('#legacy-source #sortie-educative a[href]')]
+        .find(link => /demande d.?autorisation/i.test(link.textContent || ''));
+      if (sortieLink) sortieLink.href = 'https://appsp.ca/formulaire/depot.php?id=5';
     } else {
       console.error('Impossible de charger source-patches-6.js', xhr.status);
     }
