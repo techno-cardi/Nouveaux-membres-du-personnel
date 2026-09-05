@@ -14,7 +14,7 @@ test('le calendrier des dates importantes est dans Organisation scolaire avec le
   await expect(card.locator('a[href*="calendar.google.com/calendar/u/0?cid="]')).toHaveCount(1);
   await expect(card).toContainText('Ajouter le calendrier partagé à Google Agenda');
   await expect(card).toContainText('S’abonner à partir du web');
-  await expect(card).toContainText('adresse iCal (.ics)');
+  await expect(card).toContainText('lien d’abonnement iCal');
 
   const input = page.locator('#guide-search');
   await input.fill('dates importantes 2026 2027');
